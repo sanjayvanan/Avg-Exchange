@@ -10,7 +10,7 @@ const userRoutes = require('./routes/user');
 const app = express();
 
 app.use(cors({
-  origin: 'http://localhost:5174', // Matches your Vite port
+  origin: 'http://localhost:5173', // Matches your Vite port
   credentials: true 
 }));
 app.use(express.json());

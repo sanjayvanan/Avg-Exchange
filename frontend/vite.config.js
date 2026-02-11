@@ -1,16 +1,19 @@
-// vite.config.js
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import tailwindcss from '@tailwindcss/vite'; // Import the Tailwind v4 plugin
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    tailwindcss(), // Add this to the plugins array
+  ],
   server: {
     proxy: {
-      // Any request starting with '/api' will be proxied to CoinGecko
+      // Proxy requests to YOUR backend (port 4000) instead of directly to CoinGecko
+      // This prevents CORS issues and uses your backend logic
       '/api': {
-        target: 'https://api.coingecko.org/api/v3',
+        target: 'http://localhost:4000', 
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, ''), // Removes '/api' from the actual URL
       },
     },
   },
