@@ -6,6 +6,7 @@ import Home from './pages/Home'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
 import Navbar from './components/Navbar'
+import TrendingSection from './components/TrendingSection'
 
 function App() {
   const user = useSelector((state) => state.auth.user)
@@ -14,6 +15,7 @@ function App() {
     <BrowserRouter>
       <div className="min-h-screen bg-gray-50">
         <Navbar />
+        <TrendingSection />
         
         <main>
           <Routes>

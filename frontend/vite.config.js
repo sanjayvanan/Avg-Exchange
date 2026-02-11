@@ -1,14 +1,17 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react-swc'
-import tailwindcss from '@tailwindcss/vite'
+// vite.config.js
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
 
-// https://vite.dev/config/
 export default defineConfig({
-  plugins: [
-    react(),
-    tailwindcss(),
-  ],
+  plugins: [react()],
   server: {
-    port: 5174
-  }
-})
+    proxy: {
+      // Any request starting with '/api' will be proxied to CoinGecko
+      '/api': {
+        target: 'https://api.coingecko.org/api/v3',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, ''), // Removes '/api' from the actual URL
+      },
+    },
+  },
+});
