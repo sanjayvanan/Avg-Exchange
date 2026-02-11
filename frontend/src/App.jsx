@@ -11,12 +11,11 @@ function App() {
   const user = useSelector((state) => state.auth.user)
 
   return (
-    <div className="App">
-
-      <BrowserRouter>
+    <BrowserRouter>
+      <div className="min-h-screen bg-gray-50">
         <Navbar />
         
-        <div className="pages">
+        <main>
           <Routes>
             <Route 
               path="/" 
@@ -31,11 +30,11 @@ function App() {
               element={!user ? <Signup /> : <Navigate to="/" />} 
             />
           </Routes>
-          
-        </div>
-      </BrowserRouter>
-    </div>
-  );
+        </main>
+      </div>
+    </BrowserRouter>
+
+  )
 }
 
-export default App;
+export default App
