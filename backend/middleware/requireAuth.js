@@ -1,20 +1,29 @@
 const jwt = require('jsonwebtoken')
-const User = require('../models/userModel')
+const db = require('../db') 
 
 const requireAuth = async (req, res, next) => {
-  const token = req.cookies.token; // Look in cookies instead of headers
+  const { token } = req.cookies
 
   if (!token) {
-    return res.status(401).json({ error: 'Authentication required' });
+    return res.status(401).json({error: 'Authorization token required'})
   }
 
   try {
-    const { _id } = jwt.verify(token, process.env.SECRET);
-    req.user = await User.findOne({ _id }).select('_id');
-    next();
+    const { id } = jwt.verify(token, process.env.SECRET)
+
+    // Use SQL query instead of Mongoose findOne
+    const result = await db.query('SELECT id, email FROM "User" WHERE id = $1', [id]);
+    req.user = result.rows[0];
+
+    if (!req.user) {
+      throw Error('User not found');
+    }
+
+    next()
   } catch (error) {
-    res.status(401).json({ error: 'Request is not authorized' });
+    console.log(error)
+    res.status(401).json({error: 'Request is not authorized'})
   }
-};
+}
 
 module.exports = requireAuth
