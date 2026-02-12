@@ -1,6 +1,8 @@
-// Navbar.jsx
+// temp/frontend/src/components/Navbar.jsx
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
+import { logout } from '../features/authSlice';
 import { IoGlobeOutline, IoMoonOutline, IoSearchOutline } from 'react-icons/io5';
 import { IoIosArrowDown } from 'react-icons/io';
 import { navStyles as s } from './NavbarStyles';
@@ -8,6 +10,8 @@ import LogoWebp from '../assets/kucoin-logo.webp';
 
 const Navbar = () => {
   const [activeTab, setActiveTab] = useState('exchange');
+  const user = useSelector((state) => state.auth.user);
+  const dispatch = useDispatch();
 
   return (
     <nav className={s.nav}>
@@ -35,26 +39,42 @@ const Navbar = () => {
             </div>
           </div>
 
-          {/* EQUAL SPACING APPLIED HERE */}
           <div className={s.mainNav}>
             <NavMenuItem label="Buy Crypto" hasArrow />
             <NavMenuItem label="Markets" />
             <NavMenuItem label="Trade" hasArrow />
+            <NavMenuItem label="Earn" hasArrow />
           </div>
         </div>
 
         <div className={s.rightSection}>
-          <div className={s.authGroup}>
-            <Link to="/login" className={s.loginBtn}>Log In</Link>
-            <Link to="/signup" className={s.signUpBtn}>Sign Up</Link>
+          <div className="flex items-center gap-2">
+            <IconButton icon={<IoSearchOutline size={18} />} />
           </div>
 
           <div className={s.divider} />
 
-          <div className="flex items-center gap-1">
-            <IconButton icon={<IoSearchOutline size={20} />} />
-            <IconButton icon={<IoGlobeOutline size={20} />} />
-            <IconButton icon={<IoMoonOutline size={20} />} />
+          {!user ? (
+            <div className={s.authGroup}>
+              <Link to="/login" className={s.loginBtn}>Log In</Link>
+              <Link to="/signup" className={s.signUpBtn}>Sign Up</Link>
+            </div>
+          ) : (
+            <div className="flex items-center gap-4">
+              <span className="text-[13px] text-gray-400 font-medium">{user.email}</span>
+              <button 
+                onClick={() => dispatch(logout())}
+                className="text-white hover:text-[#00D68F] text-sm transition-colors"
+              >
+                Logout
+              </button>
+              <button className={s.signUpBtn}>Assets</button>
+            </div>
+          )}
+
+          <div className="flex items-center gap-1 ml-2">
+            <IconButton icon={<IoGlobeOutline size={18} />} />
+            <IconButton icon={<IoMoonOutline size={18} />} />
           </div>
         </div>
       </div>
@@ -65,7 +85,7 @@ const Navbar = () => {
 const NavMenuItem = ({ label, hasArrow }) => (
   <button className={s.navMenuItem}>
     <span>{label}</span>
-    {hasArrow && <IoIosArrowDown className={s.navMenuArrow} size={12} />}
+    {hasArrow && <IoIosArrowDown className={s.navMenuArrow} size={11} />}
     <div className={s.navMenuIndicator} />
   </button>
 );

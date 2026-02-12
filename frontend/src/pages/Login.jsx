@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { useDispatch, useSelector } from 'react-redux'
 import { loginUser } from '../features/authSlice'
+import { authStyles as s } from '../components/AuthStyles'
 
 const Login = () => {
   const [email, setEmail] = useState('')
@@ -11,30 +12,45 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-
     await dispatch(loginUser({ email, password }))
   }
 
   return (
-    <form className="login" onSubmit={handleSubmit}>
-      <h3>Log In</h3>
-      
-      <label>Email address:</label>
-      <input 
-        type="email" 
-        onChange={(e) => setEmail(e.target.value)} 
-        value={email} 
-      />
-      <label>Password:</label>
-      <input 
-        type="password" 
-        onChange={(e) => setPassword(e.target.value)} 
-        value={password} 
-      />
+    <div className={s.wrapper}>
+      <form className={s.formCard} onSubmit={handleSubmit}>
+        <h3 className={s.title}>Log In</h3>
+        
+        <div className="mb-4">
+          <label className={s.label}>Email address</label>
+          <input 
+            type="email" 
+            className={s.input}
+            onChange={(e) => setEmail(e.target.value)} 
+            value={email} 
+            placeholder="name@example.com"
+            required
+          />
+        </div>
 
-      <button disabled={isLoading}>Log in</button>
-      {error && <div className="error">{error}</div>}
-    </form>
+        <div className="mb-2">
+          <label className={s.label}>Password</label>
+          <input 
+            type="password" 
+            className={s.input}
+            onChange={(e) => setPassword(e.target.value)} 
+            value={password} 
+            placeholder="Enter your password"
+            required
+          />
+        </div>
+
+        <button disabled={isLoading} className={s.submitBtn}>
+          {isLoading ? 'Verifying...' : 'Log In'}
+        </button>
+
+        {error && <div className={s.errorBox}>{error}</div>}
+      </form>
+    </div>
   )
 }
 
