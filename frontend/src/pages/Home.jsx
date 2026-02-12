@@ -11,7 +11,7 @@ import TrendingSection from '../components/TrendingSection';
 import FeaturesSection from '../components/FeaturesSection';
 import StepsSection from '../components/StepsSection'; // <--- New Import
 import Footer from '../components/Footer';
-import heroVideo from '../assets/hero_video.mp4';
+import heroVideo from '../assets/Droneshot.mp4';
 
 const Home = () => {
   const user = useSelector((state) => state.auth.user);
