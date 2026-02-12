@@ -1,42 +1,69 @@
-// temp/frontend/src/components/NavbarStyles.js
+// src/components/NavbarStyles.js
+
 export const navStyles = {
-  // Cleaner gradient with better backdrop blur for a glass morphism effect
-  nav: "w-full bg-gradient-to-b from-[#0a0b0d] to-[#0a0b0d]/98 backdrop-blur-xl border-b border-white/[0.08] text-white font-sans select-none sticky top-0 z-[100] antialiased shadow-sm",
-  // Better horizontal spacing and refined height
-  container: "max-w-[1920px] mx-auto px-6 lg:px-8 h-16 flex items-center justify-between",
+  // Main Nav Bar - Glass effect with subtle border
+  nav: "w-full bg-[#0b0c0e]/80 backdrop-blur-xl border-b border-white/[0.08] text-white font-sans select-none sticky top-0 z-[100] transition-all duration-300",
+  container: "max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between relative",
   
-  leftSection: "flex items-center gap-10 h-full",
-  logoSwitcherGroup: "flex items-center gap-5 shrink-0 h-full",
-  logoImg: "h-7 w-auto object-contain shrink-0 hover:opacity-90 transition-opacity duration-200", 
+  // Left Section
+  leftSection: "flex items-center gap-8 h-full",
+  logoSwitcherGroup: "flex items-center gap-4 shrink-0",
+  logoLink: "flex items-center gap-2 relative z-[110]", // High Z-index to stay above mobile menu
+  logoImg: "h-8 w-auto object-contain",
   
-  // More refined switcher with better contrast
-  switcherContainer: "flex items-center bg-white/[0.03] rounded-lg p-0.5 border border-white/[0.06] shrink-0 shadow-inner",
-  switcherActive: "px-3.5 py-1.5 text-[10px] uppercase tracking-wide font-bold rounded-md text-white bg-white/[0.1] shadow-sm transition-all duration-200",
-  switcherInactive: "px-3.5 py-1.5 text-[10px] uppercase tracking-wide font-semibold rounded-md text-gray-400 hover:text-white hover:bg-white/[0.04] transition-all duration-200",
+  // Switcher (Desktop)
+  switcherContainer: "hidden md:flex items-center bg-white/[0.05] rounded-lg p-1 border border-white/[0.05]",
+  switcherActive: "px-3 py-1 text-[11px] font-bold rounded-md bg-[#181a20] text-white shadow-sm transition-all cursor-default",
+  switcherInactive: "px-3 py-1 text-[11px] font-semibold rounded-md text-gray-400 hover:text-white transition-all",
+
+  // Desktop Navigation
+  mainNav: "hidden xl:flex items-center gap-8 h-full ml-4",
+  navMenuItem: "text-sm font-semibold text-gray-400 hover:text-white transition-colors cursor-pointer flex items-center gap-1 hover:text-[#00D68F]",
+
+  // Right Section (Desktop)
+  rightSection: "hidden md:flex items-center gap-6",
+  authGroup: "flex items-center gap-4",
+  loginBtn: "px-2 text-sm font-bold text-gray-300 hover:text-white transition-colors",
+  signUpBtn: "bg-[#00D68F] text-black px-6 py-2 rounded-full text-sm font-bold hover:bg-[#00bd7e] transition-all transform hover:scale-105 shadow-[0_0_20px_-5px_rgba(0,214,143,0.3)]",
+  iconBtn: "text-gray-400 hover:text-white transition-colors p-1",
+
+  // Mobile Toggle Button
+  mobileToggle: "xl:hidden p-2 text-2xl text-white hover:text-[#00D68F] transition-colors cursor-pointer relative z-[110]", 
+
+  // --- NEW MOBILE MENU STYLES ---
   
-  // Improved spacing and typography for nav items
-  mainNav: "hidden xl:flex items-center h-full gap-2", 
-  navMenuItem: "group h-full px-4 flex items-center gap-1.5 text-[13px] font-semibold text-gray-200 hover:text-[#00D68F] transition-all duration-200 whitespace-nowrap relative",
-  navMenuArrow: "text-gray-500 group-hover:text-[#00D68F] transition-colors duration-200 text-xs",
-  navMenuIndicator: "absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r from-[#00D68F] to-[#00bd7e] scale-x-0 group-hover:scale-x-100 transition-transform origin-center duration-300 rounded-full",
+  // Full screen glass overlay
+  mobileMenuOverlay: "fixed inset-0 bg-black/60 backdrop-blur-sm z-[90]",
   
-  // Better spacing and visual hierarchy
-  rightSection: "flex items-center gap-5 shrink-0 h-full",
-  authGroup: "flex items-center gap-5",
-  loginBtn: "text-[13px] font-semibold text-gray-200 hover:text-white transition-colors duration-200",
-  signUpBtn: "bg-gradient-to-r from-[#00D68F] to-[#00bd7e] text-black text-[13px] font-bold px-5 py-2 rounded-lg hover:shadow-lg hover:shadow-[#00D68F]/20 transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98]",
+  // The drawer itself - Deep dark gradient
+  mobileMenuContainer: "fixed top-0 right-0 w-full sm:w-[380px] h-[100dvh] bg-gradient-to-b from-[#181a20] to-[#0b0c0e] border-l border-white/[0.08] z-[100] shadow-2xl flex flex-col justify-between",
   
-  divider: "w-px h-5 bg-white/[0.08] hidden md:block",
-  iconBtn: "w-9 h-9 flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/[0.06] rounded-lg transition-all duration-200",
+  // Content area inside the drawer
+  mobileContent: "flex flex-col h-full pt-24 px-8 pb-10 overflow-y-auto",
+  
+  // Links
+  mobileLink: "flex items-center justify-between text-2xl font-bold text-white py-5 border-b border-white/[0.03] group active:scale-[0.98] transition-all",
+  mobileLinkText: "group-hover:text-[#00D68F] transition-colors",
+  mobileLinkIcon: "text-gray-600 group-hover:text-[#00D68F] transition-colors text-xl",
+
+  // Bottom Auth Section
+  mobileAuthSection: "mt-auto pt-8 flex flex-col gap-4",
+  mobileLoginBtn: "w-full py-4 text-center text-white font-bold text-lg border border-white/10 rounded-xl hover:bg-white/5 active:bg-white/10 transition-all",
+  mobileSignUpBtn: "w-full py-4 text-center bg-[#00D68F] text-black font-bold text-lg rounded-xl hover:bg-[#00bd7e] active:scale-[0.98] transition-all shadow-lg shadow-[#00D68F]/20",
+  
+  // User Profile in Mobile
+  mobileProfile: "flex items-center gap-4 mb-8 p-4 bg-white/[0.03] rounded-2xl border border-white/[0.05]",
+  mobileProfileText: "flex flex-col",
+  mobileEmail: "text-white font-bold text-sm",
+  mobileStatus: "text-[#00D68F] text-xs font-medium",
 };
 
+// --- HERO STYLES (Kept for compatibility) ---
 export const heroStyles = {
-  // Full viewport with better overlay
   section: "relative w-full h-screen flex items-center justify-center overflow-hidden bg-black",
   video: "absolute inset-0 w-full h-full object-cover z-0 opacity-70",
   overlay: "absolute inset-0 bg-gradient-to-t from-[#0a0b0d] via-black/50 to-black/30 z-10",
   content: "relative z-20 text-center px-6 max-w-6xl",
-  // More refined typography scale
   title: "text-6xl md:text-7xl lg:text-8xl font-black text-white mb-6 tracking-[-0.02em] leading-[1.1] drop-shadow-2xl",
   subtitle: "text-base md:text-xl lg:text-2xl text-gray-300 mb-12 max-w-3xl mx-auto leading-relaxed font-normal tracking-wide",
   cta: "inline-block bg-gradient-to-r from-[#00D68F] to-[#00bd7e] text-black px-8 py-4 rounded-xl font-bold text-base md:text-lg hover:shadow-2xl hover:shadow-[#00D68F]/30 transition-all duration-300 transform hover:scale-105 active:scale-95"
