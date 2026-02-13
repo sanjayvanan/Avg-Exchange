@@ -1,12 +1,13 @@
 // src/components/Navbar.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import { logout } from '../features/authSlice';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   IoMenu, IoClose, IoSearchOutline, IoGlobeOutline, 
-  IoChevronForward, IoWalletOutline, IoBarChartOutline, IoSwapHorizontal
+  IoChevronForward, IoWalletOutline, IoBarChartOutline, 
+  IoSwapHorizontal, IoChevronDown, IoCopyOutline, IoLogOutOutline, IoCheckmarkCircle
 } from 'react-icons/io5';
 import { navStyles as s } from './NavbarStyles';
 import LogoWebp from '../assets/kucoin-logo.webp';
@@ -25,20 +26,39 @@ const linkVariants = {
   open: { opacity: 1, x: 0 }
 };
 
+const dropdownVariants = {
+  hidden: { opacity: 0, y: 10, scale: 0.95 },
+  visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.2 } }
+};
+
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('exchange');
+  const [copied, setCopied] = useState(false);
+  
   const user = useSelector((state) => state.auth.user);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const dropdownRef = useRef(null);
 
-  // Prevent scrolling when menu is open
+  // Helper to get display name (Name -> Email)
+  const displayName = user ? (user.name || user.email) : '';
+
+  // Close dropdown when clicking outside
   useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
-    }
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Prevent scrolling when mobile menu is open
+  useEffect(() => {
+    document.body.style.overflow = isOpen ? 'hidden' : 'unset';
   }, [isOpen]);
 
   const handleNav = (path) => {
@@ -49,7 +69,16 @@ const Navbar = () => {
   const handleLogout = () => {
     dispatch(logout());
     setIsOpen(false);
+    setIsDropdownOpen(false);
     navigate('/login');
+  };
+
+  const copyToClipboard = () => {
+    if (user?.referralCode) {
+      navigator.clipboard.writeText(user.referralCode);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
   };
 
   return (
@@ -95,11 +124,69 @@ const Navbar = () => {
                 <Link to="/signup" className={s.signUpBtn}>Sign Up</Link>
               </div>
             ) : (
-              <div className="flex items-center gap-4">
-                <span className="text-sm font-bold text-white">{user.email}</span>
-                {/* Referral Code Displayed Here */}
-                <span>{user.referralCode}</span>
-                <button onClick={handleLogout} className="text-sm text-gray-400 hover:text-[#00D68F] transition-colors">Logout</button>
+              <div className={s.userDropdownGroup} ref={dropdownRef}>
+                {/* Trigger */}
+                <div 
+                  className={s.userDropdownTrigger} 
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                >
+                  <div className={s.userAvatarSmall}>
+                    {displayName.charAt(0).toUpperCase()}
+                  </div>
+                  <span className={s.userNameText}>{displayName}</span>
+                  <IoChevronDown 
+                    className={`text-gray-400 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} 
+                  />
+                </div>
+
+                {/* Dropdown Menu */}
+                <AnimatePresence>
+                  {isDropdownOpen && (
+                    <motion.div 
+                      initial="hidden"
+                      animate="visible"
+                      exit="hidden"
+                      variants={dropdownVariants}
+                      className={s.dropdownMenu}
+                    >
+                      {/* Referral Section */}
+                      <div className={s.dropdownHeader}>
+                        <div className={s.dropdownLabel}>Your Referral Code</div>
+                        <div 
+                          className={s.referralBox} 
+                          onClick={copyToClipboard}
+                          title="Click to copy"
+                        >
+                          <span className={s.referralCode}>{user.referralCode || '----'}</span>
+                          {copied ? (
+                            <IoCheckmarkCircle className="text-[#00D68F]" size={18} />
+                          ) : (
+                            <IoCopyOutline className={s.copyIcon} size={18} />
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Menu Items */}
+                      <div className="py-2">
+                        <Link to="/settings" className={s.dropdownItem} onClick={() => setIsDropdownOpen(false)}>
+                          Settings
+                        </Link>
+                        <Link to="/api-keys" className={s.dropdownItem} onClick={() => setIsDropdownOpen(false)}>
+                          API Management
+                        </Link>
+                      </div>
+
+                      {/* Logout */}
+                      <button 
+                        onClick={handleLogout} 
+                        className={s.dropdownItemRed}
+                      >
+                        <IoLogOutOutline size={18} />
+                        Log Out
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             )}
             
@@ -139,14 +226,27 @@ const Navbar = () => {
                 {/* User Profile Section (Mobile) */}
                 {user && (
                   <motion.div variants={linkVariants} className={s.mobileProfile}>
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#00D68F] to-[#00bd7e] flex items-center justify-center text-black font-bold text-lg">
-                      {user.email.charAt(0).toUpperCase()}
+                    <div className={s.mobileProfileHeader}>
+                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#00D68F] to-[#00bd7e] flex items-center justify-center text-black font-bold text-xl">
+                        {displayName.charAt(0).toUpperCase()}
+                      </div>
+                      <div className={s.mobileProfileText}>
+                        <span className={s.mobileEmail + " capitalize"}>{displayName}</span>
+                        <span className={s.mobileStatus}>Verified User</span>
+                      </div>
                     </div>
-                    <div className={s.mobileProfileText}>
-                      <span className={s.mobileEmail}>{user.email}</span>
-                      {/* Referral Code Displayed Here */}
-                      <span>{user.referralCode}</span>
-                      <span className={s.mobileStatus}>Verified User</span>
+
+                    {/* Mobile Referral Box */}
+                    <div className={s.mobileReferralBox} onClick={copyToClipboard}>
+                      <div className="flex flex-col">
+                        <span className={s.mobileReferralLabel}>Referral Code</span>
+                        <span className={s.mobileReferralCode}>{user.referralCode || '----'}</span>
+                      </div>
+                      {copied ? (
+                        <IoCheckmarkCircle className="text-[#00D68F]" size={20} />
+                      ) : (
+                        <IoCopyOutline className="text-gray-400" size={20} />
+                      )}
                     </div>
                   </motion.div>
                 )}

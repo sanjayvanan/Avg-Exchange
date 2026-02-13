@@ -6,19 +6,18 @@ import { authStyles as s } from '../components/AuthStyles'
 import BitcoinVideo from '../assets/Bitcoin_spinning.mp4'
 
 const Signup = () => {
+  const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [referralCode, setReferralCode] = useState('')
   const [videoLoaded, setVideoLoaded] = useState(false)
   
-  // Hook to get URL parameters
   const [searchParams] = useSearchParams();
   
   const dispatch = useDispatch()
   const isLoading = useSelector((state) => state.auth.loading)
   const error = useSelector((state) => state.auth.error)
 
-  // Auto-fill referral code from URL if present (e.g. ?ref=CODE)
   useEffect(() => {
     const refFromUrl = searchParams.get('ref');
     if (refFromUrl) {
@@ -28,8 +27,8 @@ const Signup = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    // Dispatch with referralCode
-    await dispatch(signupUser({ email, password, referralCode }))
+    // Dispatch with name
+    await dispatch(signupUser({ name, email, password, referralCode }))
   }
 
   return (
@@ -71,6 +70,19 @@ const Signup = () => {
           </div>
 
           <form onSubmit={handleSubmit}>
+            {/* Name Input */}
+            <div className={s.inputGroup}>
+              <label className={s.label}>Full Name</label>
+              <input 
+                type="text" 
+                className={s.input}
+                onChange={(e) => setName(e.target.value)} 
+                value={name} 
+                placeholder="John Doe"
+                required
+              />
+            </div>
+
             <div className={s.inputGroup}>
               <label className={s.label}>Email Address</label>
               <input 
@@ -95,7 +107,6 @@ const Signup = () => {
               />
             </div>
 
-            {/* Referral Code Input */}
             <div className={s.inputGroup}>
               <label className={s.label}>Referral Code (Optional)</label>
               <input 

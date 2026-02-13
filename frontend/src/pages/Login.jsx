@@ -3,12 +3,14 @@ import { useDispatch, useSelector } from 'react-redux'
 import { Link } from 'react-router-dom'
 import { loginUser } from '../features/authSlice'
 import { authStyles as s } from '../components/AuthStyles'
-// Import the video file
 import BitcoinVideo from '../assets/Bitcoin_spinning.mp4'
 
 const Login = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  // Add rememberMe state
+  const [rememberMe, setRememberMe] = useState(false)
+  
   const [videoLoaded, setVideoLoaded] = useState(false)
   const dispatch = useDispatch()
   const isLoading = useSelector((state) => state.auth.loading)
@@ -16,7 +18,8 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    await dispatch(loginUser({ email, password }))
+    // Pass rememberMe to action
+    await dispatch(loginUser({ email, password, rememberMe }))
   }
 
   return (
@@ -30,19 +33,11 @@ const Login = () => {
           playsInline
           preload="auto"
           className={s.videoBg}
-          onLoadedData={() => {
-            setVideoLoaded(true)
-            console.log('Video loaded successfully')
-          }}
-          onError={(e) => {
-            console.error('Video error:', e)
-            console.error('Video source:', BitcoinVideo)
-          }}
+          onLoadedData={() => setVideoLoaded(true)}
         >
           <source src={BitcoinVideo} type="video/mp4" />
         </video>
         
-        {/* Fallback background while video loads */}
         {!videoLoaded && (
           <div className="absolute inset-0 bg-gradient-to-br from-[#00D68F]/10 via-[#0a0b0d] to-[#00bd7e]/10 animate-pulse" />
         )}
@@ -92,8 +87,11 @@ const Login = () => {
 
             <div className="flex items-center justify-between mb-6">
               <label className="flex items-center gap-2 text-sm text-gray-400 cursor-pointer group">
+                {/* Remember Me Checkbox */}
                 <input 
                   type="checkbox" 
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
                   className="w-4 h-4 rounded border-white/[0.1] bg-white/[0.05] text-[#00D68F] focus:ring-[#00D68F] focus:ring-offset-0"
                 />
                 <span className="group-hover:text-white transition-colors">Remember me</span>

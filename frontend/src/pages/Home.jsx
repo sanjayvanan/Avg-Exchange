@@ -41,7 +41,7 @@ const Home = () => {
           
           <p className={heroStyles.subtitle}>
             {user
-              ? `Welcome back, ${user.email}. Your portfolio is ready.`
+              ? `Welcome back, ${user.name || user.email}. Your portfolio is ready.`
               : "Trade, swap, and manage your assets with the world's most secure and advanced crypto exchange platform."
             }
           </p>

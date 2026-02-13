@@ -10,12 +10,14 @@ const savedUser = (() => {
 
 export const loginUser = createAsyncThunk(
   'auth/loginUser',
-  async ({ email, password }, { rejectWithValue }) => {
+  // Accept rememberMe
+  async ({ email, password, rememberMe }, { rejectWithValue }) => {
     try {
       const response = await fetch(`${API_URL}/api/user/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        // Pass rememberMe to backend
+        body: JSON.stringify({ email, password, rememberMe }),
         credentials: 'include' 
       });
       const data = await response.json();
@@ -31,14 +33,14 @@ export const loginUser = createAsyncThunk(
 
 export const signupUser = createAsyncThunk(
   'auth/signupUser',
-  // Updated to destructure referralCode (defaults to null if not passed)
-  async ({ email, password, referralCode }, { rejectWithValue }) => {
+  // Accept name
+  async ({ name, email, password, referralCode }, { rejectWithValue }) => {
     try {
       const response = await fetch(`${API_URL}/api/user/signup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        // Send referralCode to backend
-        body: JSON.stringify({ email, password, referralCode }),
+        // Pass name to backend
+        body: JSON.stringify({ name, email, password, referralCode }),
         credentials: 'include'
       });
       const data = await response.json();
