@@ -6,7 +6,6 @@ import { trendingStyles as s } from './HomeStyles';
 import { IoFlame, IoTrendingUp, IoRocket } from 'react-icons/io5';
 
 const TrendingSection = () => {
-  // Using dummy data if API fails or for preview
   const [cryptoData, setCryptoData] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -31,7 +30,7 @@ const TrendingSection = () => {
           className={s.header}
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+          viewport={{ once: false, amount: 0.3 }} // Changed
         >
           <h2 className={s.title}>Market Trends</h2>
           <p className={s.subtitle}>Real-time updates on the most active assets.</p>
@@ -67,7 +66,7 @@ const MarketCard = ({ title, icon, data, delay }) => (
     className={s.card}
     initial={{ opacity: 0, y: 30 }}
     whileInView={{ opacity: 1, y: 0 }}
-    viewport={{ once: true }}
+    viewport={{ once: false, amount: 0.2 }} // Changed
     transition={{ delay: delay, duration: 0.5 }}
   >
     <div className={s.cardTitle}>

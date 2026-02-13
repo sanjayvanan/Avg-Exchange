@@ -32,7 +32,7 @@ const FeaturesSection = () => {
           className={s.header}
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+          viewport={{ once: false, amount: 0.3 }} // Changed
         >
           <h2 className={s.title}>Why Trade with Us?</h2>
           <p className={s.subtitle}>
@@ -47,7 +47,7 @@ const FeaturesSection = () => {
               className={s.card}
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
+              viewport={{ once: false, amount: 0.3 }} // Changed
               transition={{ delay: idx * 0.1 }}
             >
               <div className={s.iconWrapper}>

@@ -10,7 +10,6 @@ const steps = [
     icon: <IoPersonAdd />,
     title: "Create Account",
     desc: "Sign up in seconds. Verify your identity and secure your account with 2FA instantly.",
-    // Theme: Cyan/Green
     colors: {
       shadow: "hover:shadow-cyan-500/20",
       border: "hover:border-cyan-500/50",
@@ -27,7 +26,6 @@ const steps = [
     icon: <IoWallet />,
     title: "Fund Wallet",
     desc: "Connect your bank or transfer crypto. We support 50+ fiat currencies globally.",
-    // Theme: Purple/Pink
     colors: {
       shadow: "hover:shadow-purple-500/20",
       border: "hover:border-purple-500/50",
@@ -44,7 +42,6 @@ const steps = [
     icon: <IoRocketSharp />,
     title: "Start Trading",
     desc: "Buy, sell, and swap assets. Access advanced charts and execute trades with zero latency.",
-    // Theme: Orange/Amber
     colors: {
       shadow: "hover:shadow-orange-500/20",
       border: "hover:border-orange-500/50",
@@ -70,7 +67,7 @@ const StepsSection = () => {
           className={s.header}
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+          viewport={{ once: false, amount: 0.3 }} // Changed: Triggers every time
           transition={{ duration: 0.7 }}
         >
           <h2 className={s.title}>
@@ -82,7 +79,6 @@ const StepsSection = () => {
         </motion.div>
 
         <div className={s.grid}>
-          {/* Connector Line */}
           <div className={s.connectorContainer}>
             <div className={s.connectorLine} />
           </div>
@@ -90,34 +86,22 @@ const StepsSection = () => {
           {steps.map((step, idx) => (
             <motion.div 
               key={idx}
-              // Combine base classes with dynamic color themes
               className={`${s.stepCard} ${step.colors.shadow} ${step.colors.border}`}
               initial={{ opacity: 0, y: 40 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
+              viewport={{ once: false, amount: 0.3 }} // Changed: Triggers every time
               transition={{ delay: idx * 0.2, duration: 0.6 }}
             >
-              
-              {/* Massive Glowing Number Backdrop */}
               <div className={`${s.numberBox} ${step.colors.glow}`} />
-              
-              {/* Visible Number Text */}
               <div className={s.numberText}>{step.id}</div>
-
-              {/* Icon */}
               <div className={`${s.iconWrapper} ${step.colors.iconBg} ${step.colors.iconText} ${step.colors.iconHover}`}>
                 {step.icon}
               </div>
-
-              {/* Content */}
               <div className={s.content}>
                 <h3 className={`${s.stepTitle} ${step.colors.titleHover}`}>{step.title}</h3>
                 <p className={s.stepDesc}>{step.desc}</p>
               </div>
-
-              {/* Bottom Colored Bar */}
               <div className={`${s.bottomBar} ${step.colors.bar}`} />
-
             </motion.div>
           ))}
         </div>
