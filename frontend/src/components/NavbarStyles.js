@@ -68,3 +68,4 @@ export const heroStyles = {
   subtitle: "text-base md:text-xl lg:text-2xl text-gray-300 mb-12 max-w-3xl mx-auto leading-relaxed font-normal tracking-wide",
   cta: "inline-block bg-gradient-to-r from-[#00D68F] to-[#00bd7e] text-black px-8 py-4 rounded-xl font-bold text-base md:text-lg hover:shadow-2xl hover:shadow-[#00D68F]/30 transition-all duration-300 transform hover:scale-105 active:scale-95"
 };
+

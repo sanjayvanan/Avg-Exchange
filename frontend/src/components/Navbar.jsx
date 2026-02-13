@@ -97,6 +97,8 @@ const Navbar = () => {
             ) : (
               <div className="flex items-center gap-4">
                 <span className="text-sm font-bold text-white">{user.email}</span>
+                {/* Referral Code Displayed Here */}
+                <span>{user.referralCode}</span>
                 <button onClick={handleLogout} className="text-sm text-gray-400 hover:text-[#00D68F] transition-colors">Logout</button>
               </div>
             )}
@@ -142,6 +144,8 @@ const Navbar = () => {
                     </div>
                     <div className={s.mobileProfileText}>
                       <span className={s.mobileEmail}>{user.email}</span>
+                      {/* Referral Code Displayed Here */}
+                      <span>{user.referralCode}</span>
                       <span className={s.mobileStatus}>Verified User</span>
                     </div>
                   </motion.div>

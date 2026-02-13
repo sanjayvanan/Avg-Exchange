@@ -1,22 +1,35 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useDispatch, useSelector } from 'react-redux'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { signupUser } from '../features/authSlice'
 import { authStyles as s } from '../components/AuthStyles'
-// Import the video file
 import BitcoinVideo from '../assets/Bitcoin_spinning.mp4'
 
 const Signup = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [referralCode, setReferralCode] = useState('')
   const [videoLoaded, setVideoLoaded] = useState(false)
+  
+  // Hook to get URL parameters
+  const [searchParams] = useSearchParams();
+  
   const dispatch = useDispatch()
   const isLoading = useSelector((state) => state.auth.loading)
   const error = useSelector((state) => state.auth.error)
 
+  // Auto-fill referral code from URL if present (e.g. ?ref=CODE)
+  useEffect(() => {
+    const refFromUrl = searchParams.get('ref');
+    if (refFromUrl) {
+      setReferralCode(refFromUrl);
+    }
+  }, [searchParams]);
+
   const handleSubmit = async (e) => {
     e.preventDefault()
-    await dispatch(signupUser({ email, password }))
+    // Dispatch with referralCode
+    await dispatch(signupUser({ email, password, referralCode }))
   }
 
   return (
@@ -30,19 +43,11 @@ const Signup = () => {
           playsInline
           preload="auto"
           className={s.videoBg}
-          onLoadedData={() => {
-            setVideoLoaded(true)
-            console.log('Video loaded successfully')
-          }}
-          onError={(e) => {
-            console.error('Video error:', e)
-            console.error('Video source:', BitcoinVideo)
-          }}
+          onLoadedData={() => setVideoLoaded(true)}
         >
           <source src={BitcoinVideo} type="video/mp4" />
         </video>
         
-        {/* Fallback background while video loads */}
         {!videoLoaded && (
           <div className="absolute inset-0 bg-gradient-to-br from-[#00D68F]/10 via-[#0a0b0d] to-[#00bd7e]/10 animate-pulse" />
         )}
@@ -87,6 +92,18 @@ const Signup = () => {
                 value={password} 
                 placeholder="Choose a strong password"
                 required
+              />
+            </div>
+
+            {/* Referral Code Input */}
+            <div className={s.inputGroup}>
+              <label className={s.label}>Referral Code (Optional)</label>
+              <input 
+                type="text" 
+                className={s.input}
+                onChange={(e) => setReferralCode(e.target.value)} 
+                value={referralCode} 
+                placeholder="e.g. AVG-X7Z9"
               />
             </div>
 

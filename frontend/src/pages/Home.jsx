@@ -80,27 +80,44 @@ const Home = () => {
 
       {/* --- CALL TO ACTION (CTA) --- */}
       <section className={ctaStyles.section}>
-        <motion.div 
-          className={ctaStyles.container}
-          initial={{ opacity: 0, scale: 0.95 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-        >
-          <div className={ctaStyles.glow} />
-          <div className={ctaStyles.content}>
-            <h2 className={ctaStyles.title}>Ready to start your journey?</h2>
-            <p className={ctaStyles.desc}>
-              Join millions of users worldwide and trade with confidence on the most secure platform.
-            </p>
-            <div className={ctaStyles.buttonGroup}>
-              <button className={ctaStyles.primaryBtn}>Create Free Account</button>
-              <button className={ctaStyles.secondaryBtn}>Download App</button>
-            </div>
-          </div>
-        </motion.div>
-      </section>
+  <motion.div 
+    className={ctaStyles.container}
+    initial={{ opacity: 0, y: 20 }}
+    whileInView={{ opacity: 1, y: 0 }}
+    viewport={{ once: true }}
+    transition={{ duration: 0.5 }}
+  >
+    {/* 1. Top Highlight Line (from styles) */}
+    <div className={ctaStyles.glow} />
 
+    {/* 2. OPTIONAL: "Tech Grid" Background Pattern */}
+    <div 
+      className="absolute inset-0 opacity-[0.03] pointer-events-none"
+      style={{
+        backgroundImage: `linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)`,
+        backgroundSize: '40px 40px'
+      }}
+    />
+    
+    {/* 3. Radial Gradient for depth (Subtle spotlight) */}
+    <div className="absolute inset-0 bg-gradient-to-t from-[#0b0c0e] via-transparent to-transparent opacity-60" />
+
+    <div className={ctaStyles.content}>
+      <h2 className={ctaStyles.title}>Ready to start trading?</h2>
+      <p className={ctaStyles.desc}>
+        Join the world's most comprehensive and secure crypto exchange. 
+        <br className="hidden md:block" /> 
+        Get started with zero fees on your first transaction.
+      </p>
+      
+      <div className={ctaStyles.buttonGroup}>
+        <button className={ctaStyles.primaryBtn}>Create Account</button>
+        <button className={ctaStyles.secondaryBtn}>View Exchange</button>
+      </div>
+    </div>
+
+  </motion.div>
+</section>
       {/* --- FOOTER --- */}
       <Footer />
     </div>

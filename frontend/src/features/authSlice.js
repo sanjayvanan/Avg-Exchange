@@ -1,4 +1,3 @@
-// temp/frontend/src/features/authSlice.js
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import API_URL from '../config/api.js'
 
@@ -32,12 +31,14 @@ export const loginUser = createAsyncThunk(
 
 export const signupUser = createAsyncThunk(
   'auth/signupUser',
-  async ({ email, password }, { rejectWithValue }) => {
+  // Updated to destructure referralCode (defaults to null if not passed)
+  async ({ email, password, referralCode }, { rejectWithValue }) => {
     try {
       const response = await fetch(`${API_URL}/api/user/signup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        // Send referralCode to backend
+        body: JSON.stringify({ email, password, referralCode }),
         credentials: 'include'
       });
       const data = await response.json();

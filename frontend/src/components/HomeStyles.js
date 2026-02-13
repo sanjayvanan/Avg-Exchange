@@ -5,7 +5,7 @@ export const heroStyles = {
   section: "relative w-full h-screen flex items-center justify-center overflow-hidden bg-[#0b0c0e]",
   video: "absolute inset-0 w-full h-full object-cover z-0 opacity-50", 
   overlay: "absolute inset-0 bg-gradient-to-b from-black/70 via-black/20 to-[#0b0c0e] z-10", 
-  content: "relative z-20 text-center px-6 max-w-5xl mx-auto mt-16",
+  content: "relative z-20 text-center px-6 max-w-5xl mx-auto -mt-24",
   title: "text-5xl md:text-7xl lg:text-8xl font-black text-white mb-8 tracking-tighter leading-[1.1] drop-shadow-2xl",
   subtitle: "text-lg md:text-2xl text-gray-300 mb-10 max-w-3xl mx-auto font-light tracking-wide leading-relaxed",
   ctaGroup: "flex flex-col sm:flex-row gap-5 justify-center items-center",
@@ -99,16 +99,48 @@ export const featureStyles = {
 
 // --- CTA SECTION STYLES ---
 export const ctaStyles = {
-  section: "py-24 px-6 bg-[#0b0c0e]",
-  container: "max-w-6xl mx-auto rounded-[3rem] bg-gradient-to-r from-[#181a20] via-[#1a1d24] to-[#0b0c0e] border border-[#2b2f36] p-12 md:p-24 text-center relative overflow-hidden shadow-2xl",
-  glow: "absolute top-0 right-0 w-[500px] h-[500px] bg-[#00D68F]/10 blur-[120px] rounded-full pointer-events-none",
-  content: "relative z-10",
-  title: "text-4xl md:text-6xl font-bold text-white mb-8 tracking-tight",
-  desc: "text-[#76808f] text-xl mb-12 max-w-2xl mx-auto",
-  buttonGroup: "flex flex-col sm:flex-row items-center justify-center gap-5",
-  primaryBtn: "bg-[#00D68F] text-black px-12 py-5 rounded-full font-bold text-xl hover:bg-[#00bd7e] transition-all transform hover:scale-105 shadow-lg shadow-[#00D68F]/20",
-  secondaryBtn: "px-12 py-5 rounded-full font-bold text-xl border border-white/10 text-white hover:bg-white/5 transition-all",
+  section: "py-24 px-6 bg-[#0b0c0e] relative overflow-hidden",
+  
+  // CONTAINER: Sharper corners, subtle border, noise texture feel
+  container: `
+    relative max-w-5xl mx-auto rounded-[2rem] 
+    bg-gradient-to-b from-[#1e2026] to-[#121418] 
+    border border-[#2b2f36] 
+    p-12 md:p-20 text-center 
+    shadow-2xl shadow-black/50
+    overflow-hidden
+  `,
+
+  // DECORATION: A subtle top highlight line to give it a "glass edge" look
+  glow: "absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#00D68F]/50 to-transparent opacity-50",
+  
+  content: "relative z-10 flex flex-col items-center max-w-3xl mx-auto",
+  
+  // TITLE: Pure white, tight tracking, serious font weight
+  title: "text-4xl md:text-5xl font-bold text-white mb-6 tracking-tight leading-tight",
+  
+  // DESC: Clean grey, better readability
+  desc: "text-[#848e9c] text-lg md:text-xl mb-10 leading-relaxed font-normal",
+  
+  buttonGroup: "flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto",
+  
+  // PRIMARY BTN: High contrast, sharp text, no blurry shadow
+  primaryBtn: `
+    w-full sm:w-auto bg-[#00D68F] text-[#0b0c0e] 
+    px-8 py-4 rounded-xl font-semibold text-base 
+    hover:bg-[#00e096] transition-colors duration-200 
+    shadow-[0_2px_10px_rgba(0,214,143,0.15)]
+  `,
+  
+  // SECONDARY BTN: Clean outline, subtle hover background
+  secondaryBtn: `
+    w-full sm:w-auto px-8 py-4 rounded-xl font-semibold text-base 
+    text-white bg-[#2b2f36]/30 border border-[#2b2f36] 
+    hover:bg-[#2b2f36] hover:border-gray-500 
+    transition-all duration-200
+  `,
 };
+
 
 // --- FOOTER STYLES ---
 export const footerStyles = {
