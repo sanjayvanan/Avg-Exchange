@@ -7,6 +7,7 @@ const axios = require('axios');
 const { errorHandler } = require('./middleware/errorMiddleware');
 const userRoutes = require('./routes/user');
 const cryptoRoutes = require('./routes/cryptoRoutes'); // <--- Import
+const oneInchRoutes = require('./routes/oneInchRoutes');
 
 const app = express();
 
@@ -41,6 +42,7 @@ app.get('/api/trending', async (req, res) => {
 // Mount Routes
 app.use('/api/user', userRoutes);
 app.use('/api/crypto', cryptoRoutes); // <--- Mount New Route
+app.use('/api/1inch', oneInchRoutes);
 
 app.use(errorHandler);
 

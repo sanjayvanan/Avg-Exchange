@@ -4,16 +4,16 @@ import { useSelector } from 'react-redux';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
-import Markets from './pages/Markets'; // Ensure Markets is imported
+import Markets from './pages/Markets'; 
+import Trade from './pages/Trade'; // <--- Import Trade
 import Navbar from './components/Navbar';
-import ScrollToTop from './components/ScrollToTop'; // <--- Import the new component
+import ScrollToTop from './components/ScrollToTop';
 
 function App() {
   const user = useSelector((state) => state.auth.user);
 
   return (
     <BrowserRouter>
-      {/* Triggers scroll to top on route change */}
       <ScrollToTop />
       
       <div className="min-h-screen bg-[#0b0c0e] selection:bg-[#00D68F]/30">
@@ -21,11 +21,11 @@ function App() {
         <main>
           <Routes>
             <Route path="/" element={<Home />} />
-            
-            {/* Markets Route */}
             <Route path="/markets" element={<Markets />} />
             
-            {/* Auth Routes */}
+            {/* New Trade Route */}
+            <Route path="/trade" element={<Trade />} /> 
+            
             <Route 
               path="/login" 
               element={!user ? <Login /> : <Navigate to="/" />} 
@@ -35,7 +35,6 @@ function App() {
               element={!user ? <Signup /> : <Navigate to="/" />} 
             />
             
-            {/* Catch-all */}
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>
         </main>
