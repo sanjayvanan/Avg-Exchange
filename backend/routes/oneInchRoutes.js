@@ -63,4 +63,46 @@ router.get('/orderbook/:chainId', async (req, res) => {
   }
 });
 
+
+router.get('/charts/candle/:chainId', async (req, res) => {
+  const { chainId } = req.params;
+  const { token0, token1, seconds } = req.query;
+  const url = `https://api.1inch.dev/charts/v1.0/chart/aggregated/candle/${token0}/${token1}/${seconds}/${chainId}`;
+  try {
+    const response = await axios.get(url, { headers: getHeaders() });
+    res.status(200).json(response.data);
+  } catch (error) {
+    res.status(500).json({ message: "Chart Error" });
+  }
+});
+
+// @desc    Get TradingView Chart Data
+router.get('/charts/tradingview/:chainId', async (req, res) => {
+  const { chainId } = req.params;
+  const { token0, token1, seconds, fromTimestamp, toTimestamp } = req.query;
+  const url = `https://api.1inch.dev/charts/v1.0/chart/tradingview/${token0}/${token1}/${seconds}/${chainId}`;
+  try {
+    const response = await axios.get(url, {
+      headers: getHeaders(),
+      params: { fromTimestamp, toTimestamp, orderBy: 'desc' }
+    });
+    res.status(200).json(response.data);
+  } catch (error) {
+    res.status(500).json({ message: "TradingView Error" });
+  }
+});
+
+// @desc    Get Dynamic Orderbook
+router.get('/orderbook/:chainId', async (req, res) => {
+  const { chainId } = req.params;
+  // Use 'all' for general or add query params to filter by asset
+  const url = `https://api.1inch.dev/orderbook/v4.1/${chainId}/all`;
+  try {
+    const response = await axios.get(url, { headers: getHeaders(), params: req.query });
+    res.status(200).json(response.data);
+  } catch (error) {
+    res.status(500).json({ message: "Orderbook Error" });
+  }
+});
+
 module.exports = router;
