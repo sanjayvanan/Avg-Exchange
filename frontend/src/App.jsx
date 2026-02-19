@@ -8,6 +8,7 @@ import Markets from './pages/Markets';
 import Trade from './pages/Trade'; // <--- Import Trade
 import Navbar from './components/Navbar';
 import ScrollToTop from './components/ScrollToTop';
+import Footer from './components/Footer';
 
 function App() {
   const user = useSelector((state) => state.auth.user);
@@ -38,6 +39,7 @@ function App() {
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>
         </main>
+        <Footer />
       </div>
     </BrowserRouter>
   );

@@ -2,7 +2,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import axios from 'axios';
 import { marketStyles as s } from '../components/MarketStyles';
-import Footer from '../components/Footer';
 import API_URL from '../config/api'; // <--- FIXED IMPORT
 import { IoStatsChart, IoSearch, IoTrendingUp, IoTrendingDown } from 'react-icons/io5';
 
@@ -313,7 +312,6 @@ const Markets = () => {
           )}
         </div>
       </div>
-      <Footer />
     </>
   );
 };

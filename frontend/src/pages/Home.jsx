@@ -10,7 +10,6 @@ import {
 import TrendingSection from '../components/TrendingSection';
 import FeaturesSection from '../components/FeaturesSection';
 import StepsSection from '../components/StepsSection'; 
-import Footer from '../components/Footer';
 import heroVideo from '../assets/Droneshot.mp4';
 
 const Home = () => {
@@ -116,8 +115,6 @@ const Home = () => {
         </motion.div>
       </section>
       
-      {/* --- FOOTER --- */}
-      <Footer />
     </div>
   );
 };
