@@ -71,7 +71,7 @@ const Home = () => {
       </div>
 
       {/* --- TRENDING MARKETS --- */}
-      <TrendingSection />
+      {/* <TrendingSection /> */}
 
       {/* --- STEPS SECTION --- */}
       <StepsSection />
