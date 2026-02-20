@@ -7,7 +7,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   IoMenu, IoClose, IoSearchOutline, IoGlobeOutline, 
   IoChevronForward, IoWalletOutline, IoBarChartOutline, 
-  IoSwapHorizontal, IoChevronDown, IoCopyOutline, IoLogOutOutline, IoCheckmarkCircle
+  IoSwapHorizontal, IoChevronDown, IoCopyOutline, 
+  IoLogOutOutline, IoCheckmarkCircle, IoSpeedometerOutline,
+  IoListOutline, IoPersonOutline, IoPeopleOutline, IoSettingsOutline
 } from 'react-icons/io5';
 import { navStyles as s } from './NavbarStyles';
 import LogoWebp from '../assets/kucoin-logo.webp';
@@ -149,7 +151,7 @@ const Navbar = () => {
                       variants={dropdownVariants}
                       className={s.dropdownMenu}
                     >
-                      {/* Referral Section */}
+                      {/* Referral Section Header */}
                       <div className={s.dropdownHeader}>
                         <div className={s.dropdownLabel}>Your Referral Code</div>
                         <div 
@@ -167,12 +169,24 @@ const Navbar = () => {
                       </div>
 
                       {/* Menu Items */}
-                      <div className="py-2">
-                        <Link to="/settings" className={s.dropdownItem} onClick={() => setIsDropdownOpen(false)}>
-                          Settings
+                      <div className="py-2 flex flex-col">
+                        <Link to="#" className={s.dropdownItem} onClick={() => setIsDropdownOpen(false)}>
+                          <IoSpeedometerOutline size={18} /> Dashboard
                         </Link>
-                        <Link to="/api-keys" className={s.dropdownItem} onClick={() => setIsDropdownOpen(false)}>
-                          API Management
+                        <Link to="#" className={s.dropdownItem} onClick={() => setIsDropdownOpen(false)}>
+                          <IoWalletOutline size={18} /> Assets
+                        </Link>
+                        <Link to="#" className={s.dropdownItem} onClick={() => setIsDropdownOpen(false)}>
+                          <IoListOutline size={18} /> Orders
+                        </Link>
+                        <Link to="/account" className={s.dropdownItem} onClick={() => setIsDropdownOpen(false)}>
+                          <IoPersonOutline size={18} /> Account
+                        </Link>
+                        <Link to="#" className={s.dropdownItem} onClick={() => setIsDropdownOpen(false)}>
+                          <IoPeopleOutline size={18} /> Referral
+                        </Link>
+                        <Link to="#" className={s.dropdownItem} onClick={() => setIsDropdownOpen(false)}>
+                          <IoSettingsOutline size={18} /> Settings
                         </Link>
                       </div>
 
@@ -268,6 +282,13 @@ const Navbar = () => {
                     label="Trade" 
                     icon={<IoSwapHorizontal />} 
                   />
+                  {user && (
+                    <MobileLink 
+                      onClick={() => handleNav('/account')} 
+                      label="Account & KYC" 
+                      icon={<IoPersonOutline />} 
+                    />
+                  )}
                 </div>
 
                 {/* Bottom Buttons */}
