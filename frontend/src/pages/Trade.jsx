@@ -1,85 +1,14 @@
 // frontend/src/pages/Trade.jsx
-import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import axios from 'axios';
-import { ethers } from 'ethers';
 import { IoSearch, IoRefreshOutline } from 'react-icons/io5';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import { fetchNavbarBalance } from '../features/balanceSlice';
 import { Link } from 'react-router-dom';
 import API_URL from '../config/api';
 import TradingViewChart from '../components/TradingViewChart';
-
-// --- CONFIG ---
-// Fallback market data if CoinGecko API fails (Rate Limits or Offline)
-const STATIC_COINS = [
-  { id: 'bitcoin', symbol: 'btc', name: 'Bitcoin', current_price: 65000, price_change_percentage_24h: 2.5, total_volume: 35000000000, image: 'https://assets.coingecko.com/coins/images/1/large/bitcoin.png' },
-  { id: 'ethereum', symbol: 'eth', name: 'Ethereum', current_price: 3500, price_change_percentage_24h: 1.2, total_volume: 15000000000, image: 'https://assets.coingecko.com/coins/images/279/large/ethereum.png' },
-  { id: 'tether', symbol: 'usdt', name: 'Tether', current_price: 1.00, price_change_percentage_24h: 0.01, total_volume: 45000000000, image: 'https://assets.coingecko.com/coins/images/325/large/tether.png' },
-  { id: 'binancecoin', symbol: 'bnb', name: 'BNB', current_price: 580, price_change_percentage_24h: -0.5, total_volume: 1200000000, image: 'https://assets.coingecko.com/coins/images/825/large/binance-coin-logo.png' },
-  { id: 'solana', symbol: 'sol', name: 'Solana', current_price: 145, price_change_percentage_24h: 5.4, total_volume: 3200000000, image: 'https://assets.coingecko.com/coins/images/4128/large/solana.png' },
-  { id: 'ripple', symbol: 'xrp', name: 'XRP', current_price: 0.60, price_change_percentage_24h: -1.2, total_volume: 1500000000, image: 'https://assets.coingecko.com/coins/images/44/large/xrp-symbol-white-128.png' },
-  { id: 'usd-coin', symbol: 'usdc', name: 'USDC', current_price: 1.00, price_change_percentage_24h: 0.0, total_volume: 5000000000, image: 'https://assets.coingecko.com/coins/images/6319/large/USD_Coin_icon.png' },
-  { id: 'cardano', symbol: 'ada', name: 'Cardano', current_price: 0.45, price_change_percentage_24h: 0.8, total_volume: 400000000, image: 'https://assets.coingecko.com/coins/images/975/large/cardano.png' },
-  { id: 'avalanche-2', symbol: 'avax', name: 'Avalanche', current_price: 35, price_change_percentage_24h: 3.1, total_volume: 500000000, image: 'https://assets.coingecko.com/coins/images/12559/large/Avalanche_Circle_RedWhite_Trans.png' },
-  { id: 'dogecoin', symbol: 'doge', name: 'Dogecoin', current_price: 0.15, price_change_percentage_24h: -2.1, total_volume: 1800000000, image: 'https://assets.coingecko.com/coins/images/5/large/dogecoin.png' },
-  { id: 'polkadot', symbol: 'dot', name: 'Polkadot', current_price: 7.20, price_change_percentage_24h: 1.5, total_volume: 250000000, image: 'https://assets.coingecko.com/coins/images/12171/large/polkadot.png' },
-  { id: 'chainlink', symbol: 'link', name: 'Chainlink', current_price: 18.50, price_change_percentage_24h: 4.2, total_volume: 600000000, image: 'https://assets.coingecko.com/coins/images/877/large/chainlink-new-logo.png' },
-  { id: 'shiba-inu', symbol: 'shib', name: 'Shiba Inu', current_price: 0.000025, price_change_percentage_24h: -1.5, total_volume: 400000000, image: 'https://assets.coingecko.com/coins/images/11939/large/shiba.png' },
-  { id: 'matic-network', symbol: 'matic', name: 'Polygon', current_price: 0.70, price_change_percentage_24h: 2.2, total_volume: 300000000, image: 'https://assets.coingecko.com/coins/images/4713/large/matic-token-icon.png' },
-  { id: 'litecoin', symbol: 'ltc', name: 'Litecoin', current_price: 85, price_change_percentage_24h: 0.5, total_volume: 450000000, image: 'https://assets.coingecko.com/coins/images/2/large/litecoin.png' },
-  { id: 'bitcoin-cash', symbol: 'bch', name: 'Bitcoin Cash', current_price: 450, price_change_percentage_24h: 1.1, total_volume: 300000000, image: 'https://assets.coingecko.com/coins/images/780/large/bitcoin-cash-circle.png' },
-  { id: 'uniswap', symbol: 'uni', name: 'Uniswap', current_price: 10.50, price_change_percentage_24h: -0.8, total_volume: 150000000, image: 'https://assets.coingecko.com/coins/images/12504/large/uniswap-uni.png' },
-  { id: 'dai', symbol: 'dai', name: 'Dai', current_price: 1.00, price_change_percentage_24h: 0.05, total_volume: 120000000, image: 'https://assets.coingecko.com/coins/images/9956/large/4943.png' },
-  { id: 'cosmos', symbol: 'atom', name: 'Cosmos', current_price: 8.50, price_change_percentage_24h: 2.7, total_volume: 200000000, image: 'https://assets.coingecko.com/coins/images/1481/large/cosmos_hub.png' },
-  { id: 'the-open-network', symbol: 'ton', name: 'Toncoin', current_price: 6.80, price_change_percentage_24h: 4.5, total_volume: 250000000, image: 'https://assets.coingecko.com/coins/images/17980/large/ton_symbol.png' }
-];
-
-// Known ERC-20 addresses on Ethereum mainnet.
-const KNOWN_ERC20 = {
-  ETH:   { address: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2', decimals: 18 },
-  WETH:  { address: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2', decimals: 18 },
-  BTC:   { address: '0x2260fac5e5542a773aa44fbcfedf7c193bc2c599', decimals: 8  },
-  WBTC:  { address: '0x2260fac5e5542a773aa44fbcfedf7c193bc2c599', decimals: 8  },
-  USDC:  { address: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', decimals: 6  },
-  DAI:   { address: '0x6b175474e89094c44da98b954eedeac495271d0f', decimals: 18 },
-  LINK:  { address: '0x514910771af9ca656af840dff83e8264ecf986ca', decimals: 18 },
-  UNI:   { address: '0x1f9840a85d5af5bf1d1762f925bdaddc4201f984', decimals: 18 },
-  AAVE:  { address: '0x7fc66500c84a76ad7e9c93437bfc5ac33e2ddae9', decimals: 18 },
-  MKR:   { address: '0x9f8f72aa9304c8b593d555f12ef6589cc3a579a2', decimals: 18 },
-  MATIC: { address: '0x7d1afa7b718fb893db30a3abc0cfc608aacfebb0', decimals: 18 },
-  POL:   { address: '0x7d1afa7b718fb893db30a3abc0cfc608aacfebb0', decimals: 18 },
-  LDO:   { address: '0x5a98fcbea516cf06857215779fd812ca3bef1b32', decimals: 18 },
-  CRV:   { address: '0xd533a949740bb3306d119cc777fa900ba034cd52', decimals: 18 },
-  SHIB:  { address: '0x95ad61b0a150d79219dcf64e1e6cc01f0b64c4ce', decimals: 18 },
-  APE:   { address: '0x4d224452801aced8b2f0aebe155379bb5d594381', decimals: 18 },
-  BNB:   { address: '0xb8c77482e45f1f44de1745f52c74426c631bdd52', decimals: 18 },
-  GRT:   { address: '0xc944e90c64b2c07662a292be6244bdf05cda44a7', decimals: 18 },
-  SNX:   { address: '0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f', decimals: 18 },
-  // Native-chain coins with no ERC-20 on Ethereum mainnet
-  SOL:   { address: null, decimals: 9  },
-  XRP:   { address: null, decimals: 6  },
-  DOGE:  { address: null, decimals: 8  },
-  ADA:   { address: null, decimals: 6  },
-  AVAX:  { address: null, decimals: 18 },
-  DOT:   { address: null, decimals: 10 },
-  TRX:   { address: null, decimals: 6  },
-  LTC:   { address: null, decimals: 8  },
-  BCH:   { address: null, decimals: 8  },
-  XLM:   { address: null, decimals: 7  },
-  ATOM:  { address: null, decimals: 6  },
-  TON:   { address: null, decimals: 9  },
-  SUI:   { address: null, decimals: 9  },
-};
-
-const USDT_TOKEN = {
-  symbol: 'USDT',
-  address: '0xdac17f958d2ee523a2206206994597c13d831ec7',
-  decimals: 6,
-};
-
-const DEFAULT_TOKENS = [
-  { symbol: 'ETH', address: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2', decimals: 18 },
-  USDT_TOKEN,
-];
+import { STATIC_COINS } from '../constants/tokens';
+import useTradeSocket from '../hooks/useTradeSocket';
 
 const MAX_ROWS = 12; // rows per side in order book
 const ROW_H    = 22; // px — fixed row height
@@ -111,12 +40,23 @@ const ObRow = ({ o, side }) => {
   );
 };
 
+// Max recent trades to keep in memory
+const MAX_TRADES = 30;
+
+// Module-level counter — gives every incoming trade a unique, stable id
+// without relying on time+price+qty which can collide on high-volume pairs.
+let _tradeSeq = 0;
+
+// Format a trade timestamp as HH:MM:SS
+const fmtTime = (ms) =>
+  new Date(ms).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+
 // --- MAIN COMPONENT ---
 const Trade = () => {
   const { user } = useSelector((state) => state.auth);
+  const dispatch = useDispatch();
 
-  const [tokenList,    setTokenList]    = useState(DEFAULT_TOKENS);
-  const [selectedCoin, setSelectedCoin] = useState(DEFAULT_TOKENS[0]);
+  const [selectedCoin, setSelectedCoin] = useState({ symbol: 'BTC' });
   const [marketList,   setMarketList]   = useState([]);
   const [search,       setSearch]       = useState('');
   const [bids,         setBids]         = useState([]);
@@ -125,101 +65,198 @@ const Trade = () => {
   const [inputPrice,   setInputPrice]   = useState('');
   const [inputAmount,  setInputAmount]  = useState('');
   const [sellAmount,   setSellAmount]   = useState('');
-  
+  const [balances,     setBalances]     = useState({});
+  const [orderLoading, setOrderLoading] = useState(false);
+  const [orderFeedback, setOrderFeedback] = useState(null);
+  const [buyOrderType,  setBuyOrderType]  = useState('limit');
+  const [sellOrderType, setSellOrderType] = useState('limit');
+  const [kycStatus, setKycStatus] = useState(null); // null=loading, 'approved', 'pending', 'none', 'rejected'
+
+  // Binance live market data — flushed to state on a throttled interval
+  // livePrices: { BTC: { price, change24h, high24h, low24h, volume24h }, ... }
+  const [livePrices,   setLivePrices]   = useState({});
+  // Recent Binance trades for the selected pair
+  const [recentTrades, setRecentTrades] = useState([]);
+  // Left-panel tab: 'book' (internal order book) or 'trades' (Binance live trades)
+  const [leftTab, setLeftTab] = useState('book');
+
+  // Refs that buffer incoming Binance data between render cycles.
+  // Nothing renders until the flush intervals fire — prevents constant re-renders.
+  const pendingTickersRef = useRef({});   // accumulated ticker updates → flush every 1 s
+  const pendingTradesRef  = useRef([]);   // accumulated trade events  → flush every 300 ms
+
+  // Flush ticker buffer → livePrices once per second.
+  // Snapshot the ref BEFORE resetting it so the setState callback
+  // reads the captured values, not the already-cleared object.
+  useEffect(() => {
+    const id = setInterval(() => {
+      const snapshot = pendingTickersRef.current;
+      if (Object.keys(snapshot).length === 0) return;
+      pendingTickersRef.current = {};           // reset first
+      setLivePrices(prev => ({ ...prev, ...snapshot })); // then commit snapshot
+    }, 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  // Flush trade buffer → recentTrades every 300 ms.
+  useEffect(() => {
+    const id = setInterval(() => {
+      const snapshot = pendingTradesRef.current;
+      if (snapshot.length === 0) return;
+      pendingTradesRef.current = [];            // reset first
+      setRecentTrades(prev => [...snapshot, ...prev].slice(0, MAX_TRADES));
+    }, 300);
+    return () => clearInterval(id);
+  }, []);
+
   // Use a ref so fetchOrderBook can always access latest selectedCoin
   const selectedCoinRef = useRef(selectedCoin);
   useEffect(() => { selectedCoinRef.current = selectedCoin; }, [selectedCoin]);
 
-  // FETCH TOKENS (1inch)
-  useEffect(() => {
-    axios.get(`${API_URL}/api/1inch/tokens`)
-      .then(({ data }) => { if (Array.isArray(data)) setTokenList(data); })
-      .catch(() => {});
-  }, []);
+  // Clear recent trades when the pair changes so stale data doesn't flash
+  useEffect(() => { setRecentTrades([]); }, [selectedCoin.symbol]);
 
-  // FETCH MARKETS (CoinGecko with Smart Static Fallback)
+  // When market order is selected, auto-fill price from Binance live price
+  // (falls back to CoinGecko if stream hasn't connected yet).
   useEffect(() => {
-    axios.get('https://api.coingecko.com/api/v3/coins/markets', {
+    const livePrice = livePrices[selectedCoin.symbol]?.price;
+    const mktObj    = marketList.find(m => m.symbol.toUpperCase() === selectedCoin.symbol) || {};
+    const price     = livePrice ?? mktObj.current_price;
+    if (!price) return;
+    if (buyOrderType  === 'market') setInputPrice(String(price));
+    if (sellOrderType === 'market') setInputPrice(String(price));
+  }, [buyOrderType, sellOrderType, selectedCoin, marketList, livePrices]);
+
+  // FETCH MARKETS (via backend proxy, with static fallback if API is unavailable)
+  useEffect(() => {
+    axios.get(`${API_URL}/api/markets`, {
       params: { vs_currency: 'usd', order: 'market_cap_desc', per_page: 50, page: 1 },
     })
     .then(({ data }) => {
-      console.log("✅ Live API Success! Loaded real data.");
       setMarketList(data);
     })
-    .catch((error) => {
-      console.warn("❌ Live API Failed! Status:", error.response?.status);
-      console.warn("🔄 Smart Fallback: Checking if we already have data...");
+    .catch(() => {
       setMarketList(prevList => prevList.length > 0 ? prevList : STATIC_COINS);
     });
   }, []);
 
-  // FETCH ORDER BOOK
+  // FETCH ORDER BOOK — uses the exchange's own internal order book
   const fetchOrderBook = useCallback(async () => {
     const coin = selectedCoinRef.current;
-    if (!coin.address || coin.symbol === 'USDT') {
-      setAsks([]); setBids([]); return;
-    }
+    const pair = `${coin.symbol}/USDT`;
     try {
       setLoadingBook(true);
-      const [ar, br] = await Promise.all([
-        axios.get(`${API_URL}/api/1inch/orderbook/1`, {
-          params: { limit: 30, makerAsset: coin.address, takerAsset: USDT_TOKEN.address },
-        }),
-        axios.get(`${API_URL}/api/1inch/orderbook/1`, {
-          params: { limit: 30, makerAsset: USDT_TOKEN.address, takerAsset: coin.address },
-        }),
-      ]);
-      const fmt = (items, isAsk) =>
-        (items || []).map((o) => {
-          const ma = parseFloat(ethers.formatUnits(o.data.makingAmount, isAsk ? coin.decimals : USDT_TOKEN.decimals));
-          const ta = parseFloat(ethers.formatUnits(o.data.takingAmount, isAsk ? USDT_TOKEN.decimals : coin.decimals));
-          const price = isAsk ? ta / ma : ma / ta;
-          return { price, amount: isAsk ? ma : ta };
-        }).sort((a, b) => isAsk ? a.price - b.price : b.price - a.price);
-
-      const rawAsks = fmt(ar.data.items, true);
-      const rawBids = fmt(br.data.items, false);
-
-      // Simple spread filter for clean display
-      const refPrice = rawBids[0]?.price || rawAsks[0]?.price;
-      if (refPrice) {
-        const lo = refPrice * 0.5;
-        const hi = refPrice * 2.0;
-        setAsks(rawAsks.filter(o => o.price >= lo && o.price <= hi).slice(0, MAX_ROWS));
-        setBids(rawBids.filter(o => o.price >= lo && o.price <= hi).slice(0, MAX_ROWS));
-      } else {
-        setAsks(rawAsks.slice(0, MAX_ROWS));
-        setBids(rawBids.slice(0, MAX_ROWS));
-      }
-    } catch { 
-      setAsks([]); setBids([]); 
-    } finally { 
-      setLoadingBook(false); 
+      const { data } = await axios.get(`${API_URL}/api/trade/orderbook`, {
+        params: { pair },
+      });
+      setAsks((data.asks || []).slice(0, MAX_ROWS));
+      setBids((data.bids || []).slice(0, MAX_ROWS));
+    } catch {
+      setAsks([]); setBids([]);
+    } finally {
+      setLoadingBook(false);
     }
   }, []);
 
+  // Initial load only — socket keeps it live after that
   useEffect(() => {
     setLoadingBook(true);
     fetchOrderBook();
-    const i = setInterval(fetchOrderBook, 15000);
-    return () => clearInterval(i);
   }, [selectedCoin, fetchOrderBook]);
+
+  // FETCH BALANCES
+  const fetchBalances = useCallback(async () => {
+    if (!user) return;
+    try {
+      const { data } = await axios.get(`${API_URL}/api/user/balance`, { withCredentials: true });
+      setBalances(data);
+    } catch (_) {}
+  }, [user]);
+
+  useEffect(() => { fetchBalances(); }, [fetchBalances]);
+
+  useEffect(() => {
+    if (!user) { setKycStatus('none'); return; }
+    axios.get(`${API_URL}/api/kyc/status`, { withCredentials: true })
+      .then(({ data }) => setKycStatus(data.status ?? 'none'))
+      .catch(() => setKycStatus('none'));
+  }, [user]);
+
+  // REAL-TIME UPDATES via WebSocket
+  useTradeSocket({
+    pair:            `${selectedCoin.symbol}/USDT`,
+    userId:          user?.id,
+
+    // ── Internal exchange events ──────────────────────────────
+    onDepthUpdate:   ({ asks, bids }) => {
+      setAsks(asks.slice(0, MAX_ROWS));
+      setBids(bids.slice(0, MAX_ROWS));
+    },
+    onBalanceUpdate: fetchBalances,
+    onReconnect:     fetchOrderBook,
+
+    // ── Binance market-data events ────────────────────────────
+    // Write into refs only — state is flushed by the throttle intervals above.
+    // This decouples the high-frequency Binance stream from React's render cycle.
+    onBinanceTicker: (data) => {
+      pendingTickersRef.current[data.symbol] = data;
+    },
+    onBinanceTrade: (data) => {
+      pendingTradesRef.current.unshift({ ...data, _id: _tradeSeq++ });
+    },
+    // onBinanceDepth and onBinanceKline are available if you need them later
+  });
+
+  // PLACE ORDER
+  const handlePlaceOrder = async (side) => {
+    const qty = side === 'buy' ? inputAmount : sellAmount;
+    if (!inputPrice || !qty) return;
+    setOrderLoading(true);
+    setOrderFeedback(null);
+    try {
+      const orderType = side === 'buy' ? buyOrderType : sellOrderType;
+      const { data } = await axios.post(
+        `${API_URL}/api/trade/order`,
+        { pair: `${selectedCoin.symbol}/USDT`, side, type: orderType, price: parseFloat(inputPrice), quantity: parseFloat(qty) },
+        { withCredentials: true }
+      );
+      const filled = data.executedTrades?.length ?? 0;
+      setOrderFeedback({
+        type: 'success',
+        message: filled > 0
+          ? `Order filled — ${filled} trade${filled > 1 ? 's' : ''} executed`
+          : 'Order placed — waiting for a match',
+      });
+      setInputAmount(''); setSellAmount(''); setInputPrice('');
+      fetchBalances();
+      dispatch(fetchNavbarBalance());
+    } catch (err) {
+      setOrderFeedback({ type: 'error', message: err.response?.data?.error || 'Order failed' });
+    } finally {
+      setOrderLoading(false);
+      setTimeout(() => setOrderFeedback(null), 5000);
+    }
+  };
+
+  // % SHORTCUTS
+  const handleBuyPercent = (pct) => {
+    const available = balances.USDT?.available ?? 0;
+    if (!inputPrice || !available) return;
+    setInputAmount(((available * pct / 100) / parseFloat(inputPrice)).toFixed(6));
+  };
+  const handleSellPercent = (pct) => {
+    const available = balances[selectedCoin.symbol]?.available ?? 0;
+    if (!available) return;
+    setSellAmount(((available * pct) / 100).toFixed(6));
+  };
 
   // HANDLERS
   const handleCoinClick = (coin) => {
     const symbol = coin.symbol.toUpperCase();
-    
-    // FIX 1: Give KNOWN_ERC20 top priority so ETH pulls the WETH address properly
-    const fromKnown     = KNOWN_ERC20[symbol];
-    const fromTokenList = tokenList.find(t => t.symbol.toUpperCase() === symbol);
-    
-    const resolved = fromKnown 
-      ? { symbol, ...fromKnown } 
-      : (fromTokenList ? { symbol, ...fromTokenList } : { symbol, address: null, decimals: 18 });
-      
-    setSelectedCoin(resolved);
+    setSelectedCoin({ symbol });
+    setBuyOrderType('limit'); setSellOrderType('limit');
     setInputPrice(''); setInputAmount(''); setSellAmount('');
-    if (resolved.symbol === selectedCoinRef.current.symbol) {
+    if (symbol === selectedCoinRef.current.symbol) {
       fetchOrderBook();
     }
   };
@@ -229,10 +266,19 @@ const Trade = () => {
     c.name.toLowerCase().includes(search.toLowerCase()) ||
     c.symbol.toLowerCase().includes(search.toLowerCase())
   );
-  const mkt = marketList.find(m => m.symbol.toUpperCase() === selectedCoin.symbol) || {};
-  const up  = (mkt.price_change_percentage_24h ?? 0) >= 0;
+  const mkt      = marketList.find(m => m.symbol.toUpperCase() === selectedCoin.symbol) || {};
+  const liveMkt  = livePrices[selectedCoin.symbol]; // Binance live ticker for selected pair
+  // Prefer Binance live data, fall back to CoinGecko for display
+  const dispPrice    = liveMkt?.price              ?? mkt.current_price;
+  const dispChange   = liveMkt?.change24h          ?? mkt.price_change_percentage_24h;
+  const dispHigh     = liveMkt?.high24h            ?? mkt.high_24h;
+  const dispLow      = liveMkt?.low24h             ?? mkt.low_24h;
+  const dispVolume   = liveMkt?.volume24h          ?? mkt.total_volume;
+  const up           = (dispChange ?? 0) >= 0;
   const buyTotal  = inputPrice && inputAmount ? (parseFloat(inputPrice) * parseFloat(inputAmount)).toFixed(2) : '0';
   const sellTotal = inputPrice && sellAmount  ? (parseFloat(inputPrice) * parseFloat(sellAmount)).toFixed(2)  : '0';
+  const usdtAvail = (balances.USDT?.available ?? 0).toLocaleString(undefined, { maximumFractionDigits: 4 });
+  const coinAvail = (balances[selectedCoin.symbol]?.available ?? 0).toLocaleString(undefined, { maximumFractionDigits: 6 });
 
   // FIX 2 & 3: Orderbook Display Logic
   const askCount = Math.min(asks.length, MAX_ROWS);
@@ -247,8 +293,7 @@ const Trade = () => {
   
   const bidSlots = Array.from({ length: MAX_ROWS }, (_, i) => bids[i] ?? null);
   
-  const noAddress  = !selectedCoin.address || selectedCoin.symbol === 'USDT';
-  const isEmpty    = !loadingBook && !noAddress && asks.length === 0 && bids.length === 0;
+  const isEmpty = !loadingBook && asks.length === 0 && bids.length === 0;
 
   const PANEL_H = 'lg:h-[800px]';
 
@@ -262,7 +307,7 @@ const Trade = () => {
           <span className="text-lg font-bold">{selectedCoin.symbol}/USDT</span>
         </div>
         <span className={up ? 'text-[#0ecb81]' : 'text-[#f6465d]'}>
-          {mkt.price_change_percentage_24h?.toFixed(2)}%
+          {dispChange?.toFixed(2) ?? '—'}%
         </span>
       </div>
 
@@ -275,13 +320,13 @@ const Trade = () => {
           </span>
         </div>
         <span className={`font-bold text-base shrink-0 ${up ? 'text-[#0ecb81]' : 'text-[#f6465d]'}`}>
-          ${mkt.current_price?.toLocaleString() ?? '—'}
+          ${dispPrice?.toLocaleString() ?? '—'}
         </span>
         {[
-          ['24h Change', `${up ? '+' : ''}${mkt.price_change_percentage_24h?.toFixed(2)}%`, up],
-          ['24h High',   `$${mkt.high_24h?.toLocaleString() ?? '—'}`,  null],
-          ['24h Low',    `$${mkt.low_24h?.toLocaleString() ?? '—'}`,   null],
-          ['Volume',     mkt.total_volume ? `$${(mkt.total_volume / 1e9).toFixed(2)}B` : '—', null],
+          ['24h Change', `${up ? '+' : ''}${dispChange?.toFixed(2) ?? '—'}%`, up],
+          ['24h High',   `$${dispHigh?.toLocaleString() ?? '—'}`,  null],
+          ['24h Low',    `$${dispLow?.toLocaleString() ?? '—'}`,   null],
+          ['Volume',     dispVolume ? `$${(dispVolume / 1e9).toFixed(2)}B` : '—', null],
         ].map(([label, val, colored]) => (
           <div key={label} className="flex flex-col shrink-0">
             <span className="text-[#848e9c] text-[10px]">{label}</span>
@@ -297,50 +342,98 @@ const Trade = () => {
       {/* MAIN GRID */}
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-2 p-2 max-w-[1600px] mx-auto w-full">
 
-        {/* ── LEFT: ORDER BOOK ── */}
+        {/* ── LEFT: ORDER BOOK / LIVE TRADES ── */}
         <div className={`order-4 lg:order-1 lg:col-span-3 bg-[#1e2329] rounded-sm flex flex-col overflow-hidden border border-[#2b3139] min-h-[400px] ${PANEL_H}`}>
-          <div className="flex items-center px-3 py-2 border-b border-[#2b3139] shrink-0">
-            <span className="flex-1 text-[10px] font-semibold text-[#848e9c] uppercase tracking-wide">Price (USDT)</span>
-            <span className="flex-1 text-right text-[10px] font-semibold text-[#848e9c] uppercase tracking-wide">Amount</span>
-            <div className="flex-1 flex items-center justify-end gap-2">
-              <span className="text-[10px] font-semibold text-[#848e9c] uppercase tracking-wide">Total</span>
-              <button onClick={fetchOrderBook} className={`text-[#848e9c] hover:text-[#eaecef] transition-colors ${loadingBook ? 'animate-spin' : ''}`} title="Refresh orderbook">
-                <IoRefreshOutline size={12} />
-              </button>
-            </div>
+
+          {/* Tab switcher */}
+          <div className="flex items-center border-b border-[#2b3139] shrink-0">
+            <button
+              onClick={() => setLeftTab('book')}
+              className={`flex-1 py-2 text-[11px] font-semibold uppercase tracking-wide transition-colors ${leftTab === 'book' ? 'text-[#eaecef] border-b-2 border-[#f0b90b]' : 'text-[#848e9c] hover:text-[#eaecef]'}`}
+            >
+              Order Book
+            </button>
+            <button
+              onClick={() => setLeftTab('trades')}
+              className={`flex-1 py-2 text-[11px] font-semibold uppercase tracking-wide transition-colors ${leftTab === 'trades' ? 'text-[#eaecef] border-b-2 border-[#f0b90b]' : 'text-[#848e9c] hover:text-[#eaecef]'}`}
+            >
+              Live Trades
+            </button>
           </div>
 
-          {loadingBook ? (
-            <div className="flex-1 flex flex-col items-center justify-center gap-2">
-              <div className="w-5 h-5 border-2 border-[#2b3139] border-t-[#848e9c] rounded-full animate-spin" />
-              <span className="text-[#848e9c] text-xs">Loading orders...</span>
-            </div>
-          ) : noAddress ? (
-            <div className="flex-1 flex flex-col items-center justify-center gap-3 px-6 text-center">
-              <div className="w-10 h-10 rounded-full bg-[#2b3139] flex items-center justify-center text-lg">🔗</div>
-              <p className="text-[#eaecef] text-xs font-semibold">{selectedCoin.symbol} — no ERC-20</p>
-              <p className="text-[#848e9c] text-[10px] leading-relaxed">
-                This coin doesn't have an ERC-20 contract on Ethereum. Coins with a <span className="text-[#0ecb81] font-bold">●</span> support the orderbook.
-              </p>
-            </div>
-          ) : isEmpty ? (
-            <div className="flex-1 flex flex-col items-center justify-center gap-3 px-6 text-center">
-              <div className="w-10 h-10 rounded-full bg-[#2b3139] flex items-center justify-center text-lg">📋</div>
-              <p className="text-[#eaecef] text-xs font-semibold">No open limit orders</p>
-              <button onClick={fetchOrderBook} className="text-[10px] px-3 py-1 rounded border border-[#363c45] text-[#848e9c] hover:border-[#f0b90b] hover:text-[#f0b90b] bg-[#2b3139] transition-colors">
-                Refresh
-              </button>
-            </div>
-          ) : (
+          {/* ORDER BOOK tab */}
+          {leftTab === 'book' && (
             <>
-              <div className="shrink-0">{askSlots.map((o, i) => <ObRow key={i} o={o} side="ask" />)}</div>
-              <div className="px-3 py-2 border-y border-[#2b3139] flex items-center justify-between bg-[#0b0e11] shrink-0">
-                <span className={`text-sm font-bold ${up ? 'text-[#0ecb81]' : 'text-[#f6465d]'}`}>
-                  ${mkt.current_price?.toLocaleString() || '---'}
-                </span>
-                <span className="text-[10px] text-[#848e9c]">≈ ${mkt.current_price?.toLocaleString()}</span>
+              <div className="flex items-center px-3 py-2 border-b border-[#2b3139] shrink-0">
+                <span className="flex-1 text-[10px] font-semibold text-[#848e9c] uppercase tracking-wide">Price (USDT)</span>
+                <span className="flex-1 text-right text-[10px] font-semibold text-[#848e9c] uppercase tracking-wide">Amount</span>
+                <div className="flex-1 flex items-center justify-end gap-2">
+                  <span className="text-[10px] font-semibold text-[#848e9c] uppercase tracking-wide">Total</span>
+                  <button onClick={fetchOrderBook} className={`text-[#848e9c] hover:text-[#eaecef] transition-colors ${loadingBook ? 'animate-spin' : ''}`} title="Refresh orderbook">
+                    <IoRefreshOutline size={12} />
+                  </button>
+                </div>
               </div>
-              <div className="shrink-0">{bidSlots.map((o, i) => <ObRow key={i} o={o} side="bid" />)}</div>
+
+              {loadingBook ? (
+                <div className="flex-1 flex flex-col items-center justify-center gap-2">
+                  <div className="w-5 h-5 border-2 border-[#2b3139] border-t-[#848e9c] rounded-full animate-spin" />
+                  <span className="text-[#848e9c] text-xs">Loading orders...</span>
+                </div>
+              ) : isEmpty ? (
+                <div className="flex-1 flex flex-col items-center justify-center gap-3 px-6 text-center">
+                  <div className="w-10 h-10 rounded-full bg-[#2b3139] flex items-center justify-center text-lg">📋</div>
+                  <p className="text-[#eaecef] text-xs font-semibold">No open limit orders</p>
+                  <button onClick={fetchOrderBook} className="text-[10px] px-3 py-1 rounded border border-[#363c45] text-[#848e9c] hover:border-[#f0b90b] hover:text-[#f0b90b] bg-[#2b3139] transition-colors">
+                    Refresh
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <div className="shrink-0">{askSlots.map((o, i) => <ObRow key={i} o={o} side="ask" />)}</div>
+                  <div className="px-3 py-2 border-y border-[#2b3139] flex items-center justify-between bg-[#0b0e11] shrink-0">
+                    <span className={`text-sm font-bold ${up ? 'text-[#0ecb81]' : 'text-[#f6465d]'}`}>
+                      ${dispPrice?.toLocaleString() ?? '---'}
+                    </span>
+                    <span className="text-[10px] text-[#848e9c]">≈ ${dispPrice?.toLocaleString() ?? '---'}</span>
+                  </div>
+                  <div className="shrink-0">{bidSlots.map((o, i) => <ObRow key={i} o={o} side="bid" />)}</div>
+                </>
+              )}
+            </>
+          )}
+
+          {/* LIVE TRADES tab — real trades streamed from Binance */}
+          {leftTab === 'trades' && (
+            <>
+              <div className="flex items-center px-3 py-1.5 border-b border-[#2b3139] shrink-0">
+                <span className="flex-1 text-[10px] font-semibold text-[#848e9c] uppercase tracking-wide">Price (USDT)</span>
+                <span className="flex-1 text-right text-[10px] font-semibold text-[#848e9c] uppercase tracking-wide">Qty</span>
+                <span className="w-16 text-right text-[10px] font-semibold text-[#848e9c] uppercase tracking-wide">Time</span>
+              </div>
+
+              {recentTrades.length === 0 ? (
+                <div className="flex-1 flex flex-col items-center justify-center gap-2">
+                  <div className="w-5 h-5 border-2 border-[#2b3139] border-t-[#848e9c] rounded-full animate-spin" />
+                  <span className="text-[#848e9c] text-xs">Connecting to Binance…</span>
+                </div>
+              ) : (
+                <div className="flex-1 overflow-y-auto">
+                  {recentTrades.map((t) => (
+                    <div key={t._id} className="flex items-center px-3 hover:bg-[#2b3139]" style={{ height: ROW_H }}>
+                      <span className={`flex-1 font-mono text-xs ${t.isBuyerMaker ? 'text-[#f6465d]' : 'text-[#0ecb81]'}`}>
+                        {t.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </span>
+                      <span className="flex-1 text-right font-mono text-xs text-[#eaecef]">
+                        {t.qty.toFixed(4)}
+                      </span>
+                      <span className="w-16 text-right text-[10px] text-[#848e9c]">
+                        {fmtTime(t.time)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </>
           )}
         </div>
@@ -352,21 +445,47 @@ const Trade = () => {
           </div>
 
           <div className="shrink-0 bg-[#1e2329] rounded-sm border border-[#2b3139] p-4">
+            {orderFeedback && (
+              <div className={`mb-3 px-3 py-2 rounded text-xs font-semibold ${orderFeedback.type === 'success' ? 'bg-[#0ecb81]/10 text-[#0ecb81] border border-[#0ecb81]/30' : 'bg-[#f6465d]/10 text-[#f6465d] border border-[#f6465d]/30'}`}>
+                {orderFeedback.message}
+              </div>
+            )}
             <div className="flex flex-col lg:flex-row gap-4">
               {/* BUY SIDE */}
               <div className="flex-1 flex flex-col gap-2.5">
                 <h3 className="text-[#0ecb81] font-bold text-sm">Buy {selectedCoin.symbol}</h3>
                 <div className="relative">
-                  <select className="w-full bg-[#2b3139] border border-[#363c45] text-[#eaecef] text-sm rounded px-3 py-2 appearance-none outline-none focus:border-[#f0b90b] cursor-pointer transition-colors">
+                  <select
+                    value={buyOrderType}
+                    onChange={e => {
+                      const t = e.target.value;
+                      setBuyOrderType(t);
+                      if (t === 'market') {
+                        const price = marketList.find(m => m.symbol.toUpperCase() === selectedCoin.symbol)?.current_price;
+                        if (price) setInputPrice(String(price));
+                      }
+                    }}
+                    className="w-full bg-[#2b3139] border border-[#363c45] text-[#eaecef] text-sm rounded px-3 py-2 appearance-none outline-none focus:border-[#f0b90b] cursor-pointer transition-colors"
+                  >
                     <option value="limit">Limit Order</option>
                     <option value="market">Market Order</option>
                   </select>
                   <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#848e9c] text-[10px]">▼</span>
                 </div>
                 <div>
-                  <label className="text-[#848e9c] text-[10px] mb-1 block">Price</label>
-                  <div className="bg-[#2b3139] border border-[#363c45] focus-within:border-[#f0b90b] rounded flex items-center px-3 py-1.5 transition-colors">
-                    <input type="number" className="bg-transparent text-[#eaecef] text-sm w-full outline-none font-mono placeholder-[#848e9c]" placeholder="0.00" value={inputPrice} onChange={e => setInputPrice(e.target.value)} />
+                  <label className="text-[#848e9c] text-[10px] mb-1 block">
+                    Price
+                    {buyOrderType === 'market' && <span className="ml-1.5 text-[#f0b90b] font-semibold">— Market</span>}
+                  </label>
+                  <div className={`bg-[#2b3139] border rounded flex items-center px-3 py-1.5 transition-colors ${buyOrderType === 'market' ? 'border-[#f0b90b]/40 opacity-70' : 'border-[#363c45] focus-within:border-[#f0b90b]'}`}>
+                    <input
+                      type="number"
+                      className="bg-transparent text-[#eaecef] text-sm w-full outline-none font-mono placeholder-[#848e9c]"
+                      placeholder="0.00"
+                      value={inputPrice}
+                      readOnly={buyOrderType === 'market'}
+                      onChange={e => buyOrderType === 'limit' && setInputPrice(e.target.value)}
+                    />
                     <span className="text-[#848e9c] text-[10px] font-semibold pl-2 shrink-0">USDT</span>
                   </div>
                 </div>
@@ -378,8 +497,8 @@ const Trade = () => {
                   </div>
                 </div>
                 <div className="grid grid-cols-4 gap-1">
-                  {['25%', '50%', '75%', '100%'].map(p => (
-                    <button key={p} className="text-[10px] py-1 rounded border border-[#363c45] text-[#848e9c] hover:border-[#0ecb81] hover:text-[#0ecb81] bg-[#2b3139] transition-colors">{p}</button>
+                  {[25, 50, 75, 100].map(p => (
+                    <button key={p} onClick={() => handleBuyPercent(p)} className="text-[10px] py-1 rounded border border-[#363c45] text-[#848e9c] hover:border-[#0ecb81] hover:text-[#0ecb81] bg-[#2b3139] transition-colors">{p}%</button>
                   ))}
                 </div>
                 <div>
@@ -389,11 +508,17 @@ const Trade = () => {
                     <span className="text-[#848e9c] text-[10px] font-semibold pl-2 shrink-0">USDT</span>
                   </div>
                 </div>
-                <p className="text-[#0ecb81] text-[10px] font-medium">Available: 0.00 USDT</p>
+                <p className="text-[#0ecb81] text-[10px] font-medium">Available: {usdtAvail} USDT</p>
                 {!user ? (
                   <Link to="/login" className="block w-full py-2 bg-[#0ecb81] hover:bg-[#0bb874] text-white font-bold text-sm rounded text-center transition-colors">Login / Sign Up</Link>
+                ) : kycStatus !== 'approved' ? (
+                  <Link to="/account" className="block w-full py-2 bg-[#2b3139] border border-[#363c45] text-[#f0b90b] font-bold text-xs rounded text-center transition-colors hover:border-[#f0b90b]">
+                    {kycStatus === null ? 'Checking KYC…' : 'Complete KYC to Trade →'}
+                  </Link>
                 ) : (
-                  <button onClick={() => alert('Complete KYC to trade.')} className="w-full py-2 bg-[#0ecb81] hover:bg-[#0bb874] text-white font-bold text-sm rounded transition-colors active:scale-[0.98]">Buy {selectedCoin.symbol}</button>
+                  <button onClick={() => handlePlaceOrder('buy')} disabled={orderLoading || !inputPrice || !inputAmount} className="w-full py-2 bg-[#0ecb81] hover:bg-[#0bb874] disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold text-sm rounded transition-colors active:scale-[0.98]">
+                    {orderLoading ? 'Placing…' : `Buy ${selectedCoin.symbol}`}
+                  </button>
                 )}
               </div>
 
@@ -403,16 +528,37 @@ const Trade = () => {
               <div className="flex-1 flex flex-col gap-2.5">
                 <h3 className="text-[#f6465d] font-bold text-sm">Sell {selectedCoin.symbol}</h3>
                 <div className="relative">
-                  <select className="w-full bg-[#2b3139] border border-[#363c45] text-[#eaecef] text-sm rounded px-3 py-2 appearance-none outline-none focus:border-[#f0b90b] cursor-pointer transition-colors">
+                  <select
+                    value={sellOrderType}
+                    onChange={e => {
+                      const t = e.target.value;
+                      setSellOrderType(t);
+                      if (t === 'market') {
+                        const price = marketList.find(m => m.symbol.toUpperCase() === selectedCoin.symbol)?.current_price;
+                        if (price) setInputPrice(String(price));
+                      }
+                    }}
+                    className="w-full bg-[#2b3139] border border-[#363c45] text-[#eaecef] text-sm rounded px-3 py-2 appearance-none outline-none focus:border-[#f0b90b] cursor-pointer transition-colors"
+                  >
                     <option value="limit">Limit Order</option>
                     <option value="market">Market Order</option>
                   </select>
                   <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#848e9c] text-[10px]">▼</span>
                 </div>
                 <div>
-                  <label className="text-[#848e9c] text-[10px] mb-1 block">Price</label>
-                  <div className="bg-[#2b3139] border border-[#363c45] focus-within:border-[#f0b90b] rounded flex items-center px-3 py-1.5 transition-colors">
-                    <input type="number" className="bg-transparent text-[#eaecef] text-sm w-full outline-none font-mono placeholder-[#848e9c]" placeholder="0.00" value={inputPrice} readOnly />
+                  <label className="text-[#848e9c] text-[10px] mb-1 block">
+                    Price
+                    {sellOrderType === 'market' && <span className="ml-1.5 text-[#f0b90b] font-semibold">— Market</span>}
+                  </label>
+                  <div className={`bg-[#2b3139] border rounded flex items-center px-3 py-1.5 transition-colors ${sellOrderType === 'market' ? 'border-[#f0b90b]/40 opacity-70' : 'border-[#363c45] focus-within:border-[#f0b90b]'}`}>
+                    <input
+                      type="number"
+                      className="bg-transparent text-[#eaecef] text-sm w-full outline-none font-mono placeholder-[#848e9c]"
+                      placeholder="0.00"
+                      value={inputPrice}
+                      readOnly={sellOrderType === 'market'}
+                      onChange={e => sellOrderType === 'limit' && setInputPrice(e.target.value)}
+                    />
                     <span className="text-[#848e9c] text-[10px] font-semibold pl-2 shrink-0">USDT</span>
                   </div>
                 </div>
@@ -424,8 +570,8 @@ const Trade = () => {
                   </div>
                 </div>
                 <div className="grid grid-cols-4 gap-1">
-                  {['25%', '50%', '75%', '100%'].map(p => (
-                    <button key={p} className="text-[10px] py-1 rounded border border-[#363c45] text-[#848e9c] hover:border-[#f6465d] hover:text-[#f6465d] bg-[#2b3139] transition-colors">{p}</button>
+                  {[25, 50, 75, 100].map(p => (
+                    <button key={p} onClick={() => handleSellPercent(p)} className="text-[10px] py-1 rounded border border-[#363c45] text-[#848e9c] hover:border-[#f6465d] hover:text-[#f6465d] bg-[#2b3139] transition-colors">{p}%</button>
                   ))}
                 </div>
                 <div>
@@ -435,11 +581,17 @@ const Trade = () => {
                     <span className="text-[#848e9c] text-[10px] font-semibold pl-2 shrink-0">USDT</span>
                   </div>
                 </div>
-                <p className="text-[#f6465d] text-[10px] font-medium">Available: 0.00 {selectedCoin.symbol}</p>
+                <p className="text-[#f6465d] text-[10px] font-medium">Available: {coinAvail} {selectedCoin.symbol}</p>
                 {!user ? (
                   <Link to="/login" className="block w-full py-2 bg-[#f6465d] hover:bg-[#e03d52] text-white font-bold text-sm rounded text-center transition-colors">Login / Sign Up</Link>
+                ) : kycStatus !== 'approved' ? (
+                  <Link to="/account" className="block w-full py-2 bg-[#2b3139] border border-[#363c45] text-[#f0b90b] font-bold text-xs rounded text-center transition-colors hover:border-[#f0b90b]">
+                    {kycStatus === null ? 'Checking KYC…' : 'Complete KYC to Trade →'}
+                  </Link>
                 ) : (
-                  <button onClick={() => alert('Complete KYC to trade.')} className="w-full py-2 bg-[#f6465d] hover:bg-[#e03d52] text-white font-bold text-sm rounded transition-colors active:scale-[0.98]">Sell {selectedCoin.symbol}</button>
+                  <button onClick={() => handlePlaceOrder('sell')} disabled={orderLoading || !inputPrice || !sellAmount} className="w-full py-2 bg-[#f6465d] hover:bg-[#e03d52] disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold text-sm rounded transition-colors active:scale-[0.98]">
+                    {orderLoading ? 'Placing…' : `Sell ${selectedCoin.symbol}`}
+                  </button>
                 )}
               </div>
             </div>
@@ -465,9 +617,13 @@ const Trade = () => {
             {filteredCoins.map(coin => {
               const sym        = coin.symbol.toUpperCase();
               const isSelected = selectedCoin.symbol === sym;
-              const positive   = (coin.price_change_percentage_24h ?? 0) >= 0;
-              const hasOB      = sym !== 'USDT' && !!(KNOWN_ERC20[sym]?.address || tokenList.find(t => t.symbol.toUpperCase() === sym)?.address);
-              
+
+              // Prefer Binance live price/change; fall back to CoinGecko snapshot
+              const live        = livePrices[sym];
+              const displayPrice  = live?.price    ?? coin.current_price;
+              const displayChange = live?.change24h ?? coin.price_change_percentage_24h;
+              const livePositive  = (displayChange ?? 0) >= 0;
+
               return (
                 <div
                   key={coin.id}
@@ -477,9 +633,6 @@ const Trade = () => {
                   <div className="flex items-center gap-1.5 flex-1 min-w-0">
                     <div className="relative shrink-0">
                       <img src={coin.image} alt={sym} className="w-4 h-4 rounded-full" />
-                      {hasOB && (
-                        <span className="absolute -bottom-px -right-px w-1.5 h-1.5 rounded-full bg-[#0ecb81] ring-1 ring-[#1e2329]" title="Orderbook available" />
-                      )}
                     </div>
                     <div className="min-w-0">
                       <div className="text-[11px] font-bold text-[#eaecef] uppercase leading-tight">{sym}</div>
@@ -487,10 +640,10 @@ const Trade = () => {
                     </div>
                   </div>
                   <div className="w-20 text-right text-[11px] font-mono text-[#eaecef]">
-                    ${coin.current_price?.toLocaleString(undefined, { maximumFractionDigits: 4 })}
+                    ${displayPrice?.toLocaleString(undefined, { maximumFractionDigits: 4 })}
                   </div>
-                  <div className={`w-14 text-right text-[10px] font-semibold ${positive ? 'text-[#0ecb81]' : 'text-[#f6465d]'}`}>
-                    {positive ? '+' : ''}{coin.price_change_percentage_24h?.toFixed(2)}%
+                  <div className={`w-14 text-right text-[10px] font-semibold ${livePositive ? 'text-[#0ecb81]' : 'text-[#f6465d]'}`}>
+                    {livePositive ? '+' : ''}{displayChange?.toFixed(2)}%
                   </div>
                 </div>
               );

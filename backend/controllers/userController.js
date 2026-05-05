@@ -9,9 +9,13 @@ const createToken = (id, expiresIn) => {
   return jwt.sign({ id }, process.env.SECRET, { expiresIn });
 };
 
-// Helper: Generate a random referral code (e.g., "AVG-X7Z9")
+// Helper: Generate a unique referral code — prefix 'MAX' + 6 random uppercase alphanumeric chars
+// e.g. "MAX8F2A9B"
 const generateReferralCode = () => {
-  return 'AVG-' + crypto.randomBytes(3).toString('hex').toUpperCase();
+  const CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  const bytes = crypto.randomBytes(6);
+  const suffix = Array.from(bytes).map(b => CHARS[b % CHARS.length]).join('');
+  return 'MAX' + suffix;
 };
 
 const signupUser = async (req, res, next) => {
@@ -58,9 +62,9 @@ const signupUser = async (req, res, next) => {
     // Default 3 days for new signup
     const token = createToken(user.id, '3d');
     
-    res.cookie('token', token, { httpOnly: true, secure: true, sameSite: 'Lax', maxAge: 3 * 24 * 60 * 60 * 1000 });
+    res.cookie('token', token, { httpOnly: true, secure: true, sameSite: 'none', maxAge: 3 * 24 * 60 * 60 * 1000 });
     
-    res.status(200).json({ email, name: user.name, referralCode: user.referral_code });
+    res.status(200).json({ id: user.id, email, name: user.name, referralCode: user.referral_code, isAdmin: false });
 
   } catch (error) {
     res.status(400);
@@ -90,9 +94,9 @@ const loginUser = async (req, res, next) => {
     const token = createToken(user.id, expiresIn);
 
     // 3. Set cookie with calculated maxAge
-    res.cookie('token', token, { httpOnly: true, secure: true, sameSite: 'Lax', maxAge });
+    res.cookie('token', token, { httpOnly: true, secure: true, sameSite: 'none', maxAge });
     
-    res.status(200).json({ email, name: user.name, referralCode: user.referral_code });
+    res.status(200).json({ id: user.id, email, name: user.name, referralCode: user.referral_code, isAdmin: user.is_admin || false });
   } catch (error) {
     res.status(400);
     next(error);

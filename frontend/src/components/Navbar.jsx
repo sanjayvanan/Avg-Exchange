@@ -2,14 +2,15 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { logout } from '../features/authSlice';
+import { logoutUser } from '../features/authSlice';
+import { fetchNavbarBalance, clearBalance } from '../features/balanceSlice';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  IoMenu, IoClose, IoSearchOutline, IoGlobeOutline, 
-  IoChevronForward, IoWalletOutline, IoBarChartOutline, 
-  IoSwapHorizontal, IoChevronDown, IoCopyOutline, 
-  IoLogOutOutline, IoCheckmarkCircle, IoSpeedometerOutline,
-  IoListOutline, IoPersonOutline, IoPeopleOutline, IoSettingsOutline
+import {
+  IoMenu, IoClose,
+  IoChevronForward, IoWalletOutline, IoBarChartOutline,
+  IoSwapHorizontal, IoChevronDown, IoCopyOutline,
+  IoLogOutOutline, IoCheckmarkCircle,
+  IoListOutline, IoPersonOutline, IoGridOutline, IoSettingsOutline,
 } from 'react-icons/io5';
 import { navStyles as s } from './NavbarStyles';
 import LogoWebp from '../assets/kucoin-logo.webp';
@@ -36,16 +37,25 @@ const dropdownVariants = {
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState('exchange');
   const [copied, setCopied] = useState(false);
-  
+
   const user = useSelector((state) => state.auth.user);
+  const totalBalance = useSelector((state) => state.balance.totalUSD);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const dropdownRef = useRef(null);
 
   // Helper to get display name (Name -> Email)
   const displayName = user ? (user.name || user.email) : '';
+
+  // Load balance on login; clear on logout
+  useEffect(() => {
+    if (user) {
+      dispatch(fetchNavbarBalance());
+    } else {
+      dispatch(clearBalance());
+    }
+  }, [user, dispatch]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -68,10 +78,10 @@ const Navbar = () => {
     if (path) navigate(path);
   };
 
-  const handleLogout = () => {
-    dispatch(logout());
+  const handleLogout = async () => {
     setIsOpen(false);
     setIsDropdownOpen(false);
+    await dispatch(logoutUser());
     navigate('/login');
   };
 
@@ -94,23 +104,7 @@ const Navbar = () => {
               <img src={LogoWebp} alt="Logo" className={s.logoImg} />
             </Link>
 
-            <div className={s.switcherContainer}>
-              <button 
-                onClick={() => setActiveTab('exchange')}
-                className={activeTab === 'exchange' ? s.switcherActive : s.switcherInactive}
-              >
-                Exchange
-              </button>
-              <button 
-                onClick={() => setActiveTab('web3')}
-                className={activeTab === 'web3' ? s.switcherActive : s.switcherInactive}
-              >
-                Web3
-              </button>
-            </div>
-
             <div className={s.mainNav}>
-              <Link to="/buy-crypto" className={s.navMenuItem}>Buy Crypto</Link>
               <Link to="/markets" className={s.navMenuItem}>Markets</Link>
               <Link to="/trade" className={s.navMenuItem}>Trade</Link>
             </div>
@@ -118,16 +112,28 @@ const Navbar = () => {
 
           {/* --- RIGHT SECTION (DESKTOP) --- */}
           <div className={s.rightSection}>
-            <button className={s.iconBtn}><IoSearchOutline size={20} /></button>
-            
             {!user ? (
               <div className={s.authGroup}>
                 <Link to="/login" className={s.loginBtn}>Log In</Link>
                 <Link to="/signup" className={s.signUpBtn}>Sign Up</Link>
               </div>
             ) : (
-              <div className={s.userDropdownGroup} ref={dropdownRef}>
-                {/* Trigger */}
+              <div className="flex items-center gap-4">
+                {/* Desktop Wallet Widget */}
+                {totalBalance !== null && (
+                  <div 
+                    onClick={() => navigate('/wallet')}
+                    className="flex items-center gap-2 cursor-pointer bg-[#181a20] hover:bg-white/[0.05] px-3 py-1.5 rounded-lg border border-white/[0.05] transition-all"
+                    title="Open Wallet"
+                  >
+                    <IoWalletOutline className="text-[#00D68F]" size={18} />
+                    <span className="text-sm font-bold text-white font-mono mt-0.5">
+                      ${totalBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
+                  </div>
+                )}
+                <div className={s.userDropdownGroup} ref={dropdownRef}>
+                  {/* Trigger */}
                 <div 
                   className={s.userDropdownTrigger} 
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
@@ -170,23 +176,22 @@ const Navbar = () => {
 
                       {/* Menu Items */}
                       <div className="py-2 flex flex-col">
-                        <Link to="#" className={s.dropdownItem} onClick={() => setIsDropdownOpen(false)}>
-                          <IoSpeedometerOutline size={18} /> Dashboard
+                        {user?.isAdmin && (
+                          <Link to="/admin" className={s.dropdownItem} onClick={() => setIsDropdownOpen(false)}>
+                            <IoSettingsOutline size={18} /> Admin Panel
+                          </Link>
+                        )}
+                        <Link to="/dashboard" className={s.dropdownItem} onClick={() => setIsDropdownOpen(false)}>
+                          <IoGridOutline size={18} /> Dashboard
                         </Link>
-                        <Link to="#" className={s.dropdownItem} onClick={() => setIsDropdownOpen(false)}>
+                        <Link to="/wallet" className={s.dropdownItem} onClick={() => setIsDropdownOpen(false)}>
                           <IoWalletOutline size={18} /> Assets
                         </Link>
-                        <Link to="#" className={s.dropdownItem} onClick={() => setIsDropdownOpen(false)}>
+                        <Link to="/wallet" className={s.dropdownItem} onClick={() => setIsDropdownOpen(false)}>
                           <IoListOutline size={18} /> Orders
                         </Link>
                         <Link to="/account" className={s.dropdownItem} onClick={() => setIsDropdownOpen(false)}>
-                          <IoPersonOutline size={18} /> Account
-                        </Link>
-                        <Link to="#" className={s.dropdownItem} onClick={() => setIsDropdownOpen(false)}>
-                          <IoPeopleOutline size={18} /> Referral
-                        </Link>
-                        <Link to="#" className={s.dropdownItem} onClick={() => setIsDropdownOpen(false)}>
-                          <IoSettingsOutline size={18} /> Settings
+                          <IoPersonOutline size={18} /> Account & KYC
                         </Link>
                       </div>
 
@@ -201,16 +206,32 @@ const Navbar = () => {
                     </motion.div>
                   )}
                 </AnimatePresence>
+                </div>
               </div>
             )}
             
-            <button className={s.iconBtn}><IoGlobeOutline size={20} /></button>
           </div>
 
-          {/* --- MOBILE HAMBURGER TOGGLE --- */}
-          <button className={s.mobileToggle} onClick={() => setIsOpen(!isOpen)}>
-            {isOpen ? <IoClose /> : <IoMenu />}
-          </button>
+          {/* --- MOBILE CONTROLS (< XL) --- */}
+          <div className="flex xl:hidden items-center gap-2">
+            {/* Mobile Small Wallet Widget (< MD) */}
+            {user && totalBalance !== null && (
+              <div 
+                onClick={() => handleNav('/wallet')}
+                className="md:hidden flex items-center gap-1.5 cursor-pointer bg-[#181a20] px-2.5 py-1 rounded-md border border-white/[0.05]"
+              >
+                <IoWalletOutline className="text-[#00D68F]" size={14} />
+                <span className="text-xs font-bold text-white font-mono mt-[1px]">
+                  ${totalBalance.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                </span>
+              </div>
+            )}
+
+            {/* --- MOBILE HAMBURGER TOGGLE --- */}
+            <button className={s.mobileToggle} onClick={() => setIsOpen(!isOpen)}>
+              {isOpen ? <IoClose /> : <IoMenu />}
+            </button>
+          </div>
         </div>
       </nav>
 
@@ -250,6 +271,22 @@ const Navbar = () => {
                       </div>
                     </div>
 
+                    {/* Mobile Wallet Balance */}
+                    {totalBalance !== null && (
+                      <div 
+                        onClick={() => handleNav('/wallet')}
+                        className="flex items-center justify-between bg-black/40 border border-white/[0.05] rounded-lg p-3 mt-4 active:bg-black/60 transition-colors cursor-pointer"
+                      >
+                        <div className="flex items-center gap-2">
+                          <IoWalletOutline className="text-[#00D68F]" size={20} />
+                          <span className="text-sm text-gray-300 font-medium">Est. Balance</span>
+                        </div>
+                        <span className="text-[#00D68F] font-mono font-bold text-sm">
+                          ${totalBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </span>
+                      </div>
+                    )}
+
                     {/* Mobile Referral Box */}
                     <div className={s.mobileReferralBox} onClick={copyToClipboard}>
                       <div className="flex flex-col">
@@ -267,15 +304,10 @@ const Navbar = () => {
 
                 {/* Navigation Links */}
                 <div className="flex flex-col">
-                  <MobileLink 
-                    onClick={() => handleNav('/buy-crypto')} 
-                    label="Buy Crypto" 
-                    icon={<IoWalletOutline />} 
-                  />
-                  <MobileLink 
-                    onClick={() => handleNav('/markets')} 
-                    label="Markets" 
-                    icon={<IoBarChartOutline />} 
+                  <MobileLink
+                    onClick={() => handleNav('/markets')}
+                    label="Markets"
+                    icon={<IoBarChartOutline />}
                   />
                   <MobileLink 
                     onClick={() => handleNav('/trade')} 
@@ -283,11 +315,23 @@ const Navbar = () => {
                     icon={<IoSwapHorizontal />} 
                   />
                   {user && (
-                    <MobileLink 
-                      onClick={() => handleNav('/account')} 
-                      label="Account & KYC" 
-                      icon={<IoPersonOutline />} 
-                    />
+                    <>
+                      <MobileLink
+                        onClick={() => handleNav('/dashboard')}
+                        label="Dashboard"
+                        icon={<IoGridOutline />}
+                      />
+                      <MobileLink
+                        onClick={() => handleNav('/wallet')}
+                        label="Assets & Orders"
+                        icon={<IoWalletOutline />}
+                      />
+                      <MobileLink
+                        onClick={() => handleNav('/account')}
+                        label="Account & KYC"
+                        icon={<IoPersonOutline />}
+                      />
+                    </>
                   )}
                 </div>
 
