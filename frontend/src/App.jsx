@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-route
 import { useSelector, useDispatch } from 'react-redux';
 import { useEffect } from 'react';
 import { refreshUser } from './features/authSlice';
-
+ 
 import Home       from './pages/Home';
 import Login      from './pages/Login';
 import Signup     from './pages/Signup';
